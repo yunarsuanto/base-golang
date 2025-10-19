@@ -1,0 +1,47 @@
+# IDE & Editor
+.idea/
+.vscode/
+.DS_Store
+
+# Logs
+*.log
+debug.log
+
+# Environment files
+.env*
+!example.env
+
+# Build artifacts
+gin-bin*
+bin/
+tmp/
+dist/
+build/
+
+# OS generated files
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Firebase key or secrets
+fcm_key.json
+
+# Images (root-level)
+*.jpg
+*.jpeg
+*.png
+
+# Go specific
+*.exe
+*.test
+*.out
+
+# Coverage & cache
+coverage.out
+*.coverprofile
+.cache/
+
+# Migrations & templates (optional clean)
+templates/.DS_Store

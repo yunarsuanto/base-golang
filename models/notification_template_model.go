@@ -57,12 +57,6 @@ type GetNotificationTemplateUser struct {
 	UserEmail    string  `db:"user_email"`
 	RoleId       string  `db:"role_id"`
 	RoleName     string  `db:"role_name"`
-	HospitalId   string  `db:"hospital_id"`
-	HospitalName string  `db:"hospital_name"`
-	ModuleId     string  `db:"module_id"`
-	ModuleName   string  `db:"module_name"`
-	FormId       string  `db:"form_id"`
-	FormName     string  `db:"form_name"`
 }
 
 func (GetNotificationTemplate) ColumnQuery() string {

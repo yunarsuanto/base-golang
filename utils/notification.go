@@ -60,9 +60,9 @@ func ParseNotification(data models.GetNotificationTemplateUser) objects.ParsedNo
 	userRule := constants.NotificationTemplateUser()
 	dateRule := constants.NotificationTemplateDate()
 	timeRule := constants.NotificationTemplateTime()
-	hospitalRule := constants.NotificationTemplateHospital()
-	moduleRule := constants.NotificationTemplateModule()
-	formRule := constants.NotificationTemplateForm()
+	// hospitalRule := constants.NotificationTemplateHospital()
+	// moduleRule := constants.NotificationTemplateModule()
+	// formRule := constants.NotificationTemplateForm()
 
 	title = strings.ReplaceAll(title, roleRule.Value, data.RoleName)
 	content = strings.ReplaceAll(content, roleRule.Value, data.RoleName)
@@ -80,17 +80,17 @@ func ParseNotification(data models.GetNotificationTemplateUser) objects.ParsedNo
 	content = strings.ReplaceAll(content, timeRule.Value, now.Format(constants.HourMinuteOnly))
 	shortContent = strings.ReplaceAll(shortContent, timeRule.Value, now.Format(constants.HourMinuteOnly))
 
-	title = strings.ReplaceAll(title, hospitalRule.Value, data.HospitalName)
-	content = strings.ReplaceAll(content, hospitalRule.Value, data.HospitalName)
-	shortContent = strings.ReplaceAll(shortContent, hospitalRule.Value, data.HospitalName)
+	// title = strings.ReplaceAll(title, hospitalRule.Value, data.HospitalName)
+	// content = strings.ReplaceAll(content, hospitalRule.Value, data.HospitalName)
+	// shortContent = strings.ReplaceAll(shortContent, hospitalRule.Value, data.HospitalName)
 
-	title = strings.ReplaceAll(title, moduleRule.Value, data.ModuleName)
-	content = strings.ReplaceAll(content, moduleRule.Value, data.ModuleName)
-	shortContent = strings.ReplaceAll(shortContent, moduleRule.Value, data.ModuleName)
+	// title = strings.ReplaceAll(title, moduleRule.Value, data.ModuleName)
+	// content = strings.ReplaceAll(content, moduleRule.Value, data.ModuleName)
+	// shortContent = strings.ReplaceAll(shortContent, moduleRule.Value, data.ModuleName)
 
-	title = strings.ReplaceAll(title, formRule.Value, data.FormName)
-	content = strings.ReplaceAll(content, formRule.Value, data.FormName)
-	shortContent = strings.ReplaceAll(shortContent, formRule.Value, data.FormName)
+	// title = strings.ReplaceAll(title, formRule.Value, data.FormName)
+	// content = strings.ReplaceAll(content, formRule.Value, data.FormName)
+	// shortContent = strings.ReplaceAll(shortContent, formRule.Value, data.FormName)
 
 	result = objects.ParsedNotificationContent{
 		Title:        title,

@@ -1,86 +1,40 @@
 package objects
 
-type ListUserRequest struct {
-	IsReporter    *bool
-	IsVerificator *bool
-	IsActive      *bool
+type CreateUserRequest struct {
+	Username string
+	Password string
+}
+
+type UpdateUserRequest struct {
+	Id       string
+	Username string
+}
+
+type DeleteUserRequest struct {
+	Id string
 }
 
 type DetailUserRequest struct {
 	Id string
 }
 
-type ListUserHospital struct {
-	Id   string
-	Name string
+type ListUserResponse struct {
+	Id                string
+	Username          string
+	Password          string
+	IsActive          bool
+	ProviderId        *string
+	Provider          *string
+	TokenVerification *string
 }
 
-type ListUserRole struct {
-	Id            string
-	Name          string
-	IsReporter    bool
-	IsVerificator bool
-}
-
-type GetUser struct {
-	Id                 string
-	Name               string
-	Email              string
-	Username           string
-	Password           string
-	IdNumber           *string
-	PhoneNumber        *string
-	ProfilePicturePath *string
-	ProfilePictureUrl  string
-	IsActive           bool
-	EmployeeId         *string
-	EmployeeNumber     *string
-	Hospitals          []ListUserHospital
-	Roles              []ListUserRole
-}
-
-type CreateUser struct {
-	Name               string
-	Email              string
-	Username           string
-	Password           string
-	IdNumber           string
-	PhoneNumber        string
-	ProfilePicturePath string
-	IsActive           bool
-	HospitalIds        []string
-	RoleIds            []string
-}
-
-type UpdateUser struct {
-	Id                 string
-	Name               string
-	Email              string
-	Username           string
-	IdNumber           string
-	PhoneNumber        string
-	ProfilePicturePath string
-	IsActive           bool
-	HospitalIds        []string
-	RoleIds            []string
-}
-
-type UpdateProfileUser struct {
-	Username           string
-	PhoneNumber        string
-	ProfilePicturePath string
-}
-
-type DeleteUser struct {
-	Id string
-}
-
-type UpdatePasswordUser struct {
-	Id       string
-	Password string
-}
-
-type UpdateActivationUser struct {
-	Id       string
-	IsActive bool
+type DetailUserResponse struct {
+	Id             string
+	Username       string
+	IsActive       bool
+	RoleId         *string
+	RoleName       *string
+	RoleIsActive   *bool
+	PermissionId   *string
+	PermissionName *string
 }

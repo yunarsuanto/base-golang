@@ -465,6 +465,42 @@ func QueryLogNamed(query string, input any) {
 	log.Println(NormalizeString(query))
 }
 
+// QueryLogNamed function for log query on repository
+func QueryLogNamedNew(query string, input any) {
+	stringTag := strings.Split(query, ":")
+	stringTags := []string{}
+	mappingVar := []map[string]string{}
+	if len(stringTag) > 0 {
+		for i := 0; i < len(stringTag); i++ {
+			if i == 0 {
+				continue
+			}
+			tagString := stringTag[i]
+			tagString = strings.Trim(tagString, " ,)\n\t")
+			stringTags = append(stringTags, tagString)
+		}
+	}
+	rt := reflect.TypeOf(input)
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		resTag, ok := f.Tag.Lookup("db")
+		if !ok {
+			return
+		}
+		if InArrayExist(resTag, stringTags) {
+			val := reflect.ValueOf(input).FieldByName(f.Name)
+			mappingVar = append(mappingVar, map[string]string{
+				"key":   fmt.Sprintf(":%s", resTag),
+				"value": fmt.Sprintf("'%v'", val),
+			})
+		}
+	}
+	for _, mapping := range reverseArray(mappingVar) {
+		query = strings.ReplaceAll(query, mapping["key"], mapping["value"])
+	}
+	log.Println(NormalizeString(query))
+}
+
 // QueryLog QueryLogMysql
 func QueryLogMysql(query string, args ...any) {
 	query = strings.ReplaceAll(query, "?", "'%v'")
@@ -754,4 +790,28 @@ func FormatVehicleNumber(input string) (string, *constants.ErrorResponse) {
 	}
 
 	return "", constants.ErrInvalidVehicleNumber
+}
+
+func ToPascalCase(s string) string {
+	parts := strings.Split(s, "_")
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + p[1:]
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+func CompareToken(s1 string, s2 string) *constants.ErrorResponse {
+	if s1 != s2 {
+		return constants.ErrInvalidGoogleToken
+	}
+	return nil
+}
+
+func ConvertStringToNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }

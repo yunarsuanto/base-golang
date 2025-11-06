@@ -10,11 +10,11 @@ import (
 )
 
 type UsersRolesRepositoryInterface interface {
-	GetList(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination, req objects.ListUsersRolesRequest) ([]models.GetUsersRoles, *constants.ErrorResponse)
-	Upsert(ctx context.Context, tx *sqlx.Tx, uesrId string, roleIds []string) *constants.ErrorResponse
-	GetByPermissions(ctx context.Context, tx *sqlx.Tx, permissions []string) ([]models.GetUsersPermissions, *constants.ErrorResponse)
+	GetByUserId(ctx context.Context, tx *sqlx.Tx, req objects.ListUserRoleRequest) (models.GetUserRole, *constants.ErrorResponse)
+	UpsertUserRole(ctx context.Context, tx *sqlx.Tx, data models.UpsertUserRoleRequest) *constants.ErrorResponse
+	DeleteUserRole(ctx context.Context, tx *sqlx.Tx, data models.DeleteUserRoleRequest) *constants.ErrorResponse
 }
 
 func NewUsersRolesRepository() UsersRolesRepositoryInterface {
-	return &usersRolesRepository{}
+	return &repository{}
 }

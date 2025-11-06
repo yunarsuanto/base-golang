@@ -10,20 +10,22 @@ import (
 )
 
 type UserRepositoryInterface interface {
-	GetList(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination, req objects.ListUserRequest) ([]models.GetUser, *constants.ErrorResponse)
-	GetById(ctx context.Context, tx *sqlx.Tx, userId string) (models.GetUser, *constants.ErrorResponse)
-	GetByEmployeeId(ctx context.Context, tx *sqlx.Tx, employeeId string) (models.GetUser, *constants.ErrorResponse)
-	Create(ctx context.Context, tx *sqlx.Tx, data models.CreateUser) *constants.ErrorResponse
-	Update(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse
-	Delete(ctx context.Context, tx *sqlx.Tx, id string) *constants.ErrorResponse
-	GetByEmail(ctx context.Context, tx *sqlx.Tx, email, username, excludingId string) (models.GetUser, *constants.ErrorResponse)
-	GetByIdNumber(ctx context.Context, tx *sqlx.Tx, idNumber, excludingId string) (models.GetUser, *constants.ErrorResponse)
-	GetByPhoneNumber(ctx context.Context, tx *sqlx.Tx, phoneNumber, excludingId string) (models.GetUser, *constants.ErrorResponse)
-	ChangePassword(ctx context.Context, tx *sqlx.Tx, data models.ChangeUserPassword) *constants.ErrorResponse
-	UpdateProfile(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse
-	UpdateActivation(ctx context.Context, tx *sqlx.Tx, id string, isActive bool) *constants.ErrorResponse
+	GetByUsername(ctx context.Context, tx *sqlx.Tx, username string) (models.ListUser, *constants.ErrorResponse)
+	GetById(ctx context.Context, tx *sqlx.Tx, id string) (models.ListUser, *constants.ErrorResponse)
+	GetByTokenVerification(ctx context.Context, tx *sqlx.Tx, tokenVerification string) (models.ListUser, *constants.ErrorResponse)
+
+	ListUser(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination) ([]models.ListUser, *constants.ErrorResponse)
+	DetailUser(ctx context.Context, tx *sqlx.Tx, id string) ([]models.DetailUser, *constants.ErrorResponse)
+	CreateUser(ctx context.Context, tx *sqlx.Tx, data models.CreateUser) *constants.ErrorResponse
+	UpdateUser(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse
+	DeleteUser(ctx context.Context, tx *sqlx.Tx, data models.DeleteUser) *constants.ErrorResponse
+
+	UpdateTokenVerification(ctx context.Context, tx *sqlx.Tx, data models.UpdateUserTokenVerification) *constants.ErrorResponse
+	UpdateTokenVerificationIsActiveUser(ctx context.Context, tx *sqlx.Tx, data models.UpdateUserIsActiveTokenVerification) *constants.ErrorResponse
+
+	CreateUserProfile(ctx context.Context, tx *sqlx.Tx, data models.CreateUserProfile) *constants.ErrorResponse
 }
 
 func NewUserRepository() UserRepositoryInterface {
-	return &userRepository{}
+	return &repository{}
 }

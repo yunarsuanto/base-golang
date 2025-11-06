@@ -196,7 +196,7 @@ func ServeHTTP() error {
 	corsHandler := cors.New(cors.Options{
 		AllowedHeaders: []string{
 			constants.HeaderAuthorization,
-			constants.HeaderHospitalId,
+			// constants.HeaderHospitalId,
 			"Accept", "Origin", "Content-Type", "X-Requested-With", "Cache-Control",
 		},
 		AllowedMethods: []string{

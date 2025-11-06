@@ -4,6 +4,7 @@ go 1.24.3
 
 require (
 	firebase.google.com/go/v4 v4.18.0
+	github.com/MicahParks/keyfunc v1.9.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dongri/phonenumber v0.1.12
 	github.com/gabriel-vasile/mimetype v1.4.10
@@ -25,6 +26,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/xuri/excelize/v2 v2.10.0
 	golang.org/x/crypto v0.43.0
+	golang.org/x/net v0.46.0
 	google.golang.org/api v0.252.0
 	gopkg.in/mail.v2 v2.3.1
 )
@@ -44,7 +46,6 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.29.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.51.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.51.0 // indirect
-	github.com/MicahParks/keyfunc v1.9.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20250501225837-2ac532fd4443 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -93,7 +94,6 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.31.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect

@@ -20,7 +20,6 @@ type activityLogService struct {
 
 func (a activityLogService) Create(ctx context.Context, data objects.CreateActivityLog) *constants.ErrorResponse {
 	r := data.Request
-
 	tx, err := a.Db.Begin(ctx)
 	if err != nil {
 		return utils.ErrorInternalServer(err.Error())
@@ -44,9 +43,14 @@ func (a activityLogService) Create(ctx context.Context, data objects.CreateActiv
 
 	var errorMessage sql.NullString
 	if utils.FirstDigit(data.ResponseMeta.Status) != 2 {
+		if data.ResponseMeta.Message == "" {
+			errorMessage = utils.NewNullString("empty")
+		} else {
+			errorMessage = utils.NewNullString(data.ResponseMeta.Message)
+		}
+	} else {
 		errorMessage = utils.NewNullString(data.ResponseMeta.Message)
 	}
-
 	createData := models.CreateActivityLog{
 		UserId:       userId,
 		Host:         r.Host,

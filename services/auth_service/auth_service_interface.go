@@ -10,7 +10,10 @@ import (
 )
 
 type AuthServiceInterface interface {
-	Login(ctx context.Context, data objects.LoginRequest) (objects.Login, *constants.ErrorResponse)
+	Login(ctx context.Context, data objects.LoginRequest) (objects.LoginResponse, *constants.ErrorResponse)
+	LoginWithGoogle(ctx context.Context, data objects.LoginWithGoogleRequest) (objects.LoginResponse, *constants.ErrorResponse)
+	Verify(ctx context.Context, data objects.VerifyRequest) (objects.LoginResponse, *constants.ErrorResponse)
+	RefreshToken(ctx context.Context, data objects.RefreshTokenRequest) (objects.LoginResponse, *constants.ErrorResponse)
 }
 
 func NewAuthService(repoCtx *repository.RepoCtx, infraCtx *infra.InfraCtx) AuthServiceInterface {

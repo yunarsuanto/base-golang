@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Activated Email</title>
+  <style>
+    body {
+      font-family: Verdana, sans-serif;
+      color: #000;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 640px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .email-content {
+      width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .email-header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .email-header img {
+      width: 300px;
+      height: auto;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background-color: #eaeaea;
+      margin: 20px 0;
+    }
+
+    .email-body {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .email-body p {
+      font-size: 17px;
+      line-height: 1.5;
+      margin: 10px 0;
+      text-align: justify;
+    }
+
+    .email-footer {
+      font-size: 11px;
+      color: #888888;
+      padding: 10px 20px;
+      margin-top: 20px;
+    }
+
+    .closing {
+      margin-top: 30px;
+    }
+
+    .table-group {
+      width: 80%;
+    }
+
+    .table-row {
+      text-align: left;
+      width: 30%;
+    }
+
+    .table-row td {
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: flex-start;
+      gap: 20px;
+    }
+
+    .btn {
+      font-size: 16px;
+      font-weight: bold;
+      padding: 10px 40px;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.3s;
+    }
+
+    .btn.detail {
+      background-color: #005e7c;
+      color: white !important;
+      border: none;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .btn.detail:hover {
+      background-color: #004e6a;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="email-header">
+      <img src="{{ logo }}" alt="Serenus Logo">
+    </div>
+    <div class="divider"></div>
+    <div class="email-content">
+      {{ template "email-body" . }}
+    </div>
+    <div class="email-footer">
+      <p>&copy; Serenus {{ year }}<br />
+        Kami sangat menjaga keamanan akun Anda. Kami tidak akan pernah mengirim email dan meminta Anda untuk
+        mengungkapkan kata sandi atau informasi pribadi lainnya. Jika Anda menerima email mencurigakan dengan tautan
+        untuk memperbarui informasi akun Anda, jangan klik tautan tersebut. Sebagai gantinya, silakan laporkan hal ini
+        ke Tim Dukungan Serenus untuk penyelidikan lebih lanjut.
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

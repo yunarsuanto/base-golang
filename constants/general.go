@@ -4,10 +4,10 @@ import "time"
 
 type contextKeyType int
 type permissionKeyType int
-type schemeTypeKeyType int
+type schemaTypeKeyType int
 
 const (
-	AppName = "harmone-services"
+	AppName = "umkm-go"
 )
 
 const (
@@ -16,12 +16,12 @@ const (
 )
 
 const (
-	HeaderAuthorization                    = "Authorization"
-	HeaderHospitalId                       = "X-Hospital-ID"
+	HeaderAuthorization = "Authorization"
+	// HeaderHospitalId                       = "X-Hospital-ID"
 	Bearer                                 = "Bearer"
 	ClaimsContextKey     contextKeyType    = iota
 	PermissionContextKey permissionKeyType = iota
-	SchemeTypeContextKey schemeTypeKeyType = iota
+	schemaTypeContextKey schemaTypeKeyType = iota
 )
 
 const (

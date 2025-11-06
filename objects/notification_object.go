@@ -8,19 +8,19 @@ type ListNotificationRequest struct {
 }
 
 type ListNotification struct {
-	Id                  string
-	CreatedAt           time.Time
-	Title               string
-	Content             string
-	ShortContent        *string
-	Context             string
-	IsRead              bool
-	HospitalId          *string
-	FormId              *string
-	FormVersionId       *string
-	FormEntryId         *string
-	FormEntryApprovalId *string
-	FormEntryPeriodId   *string
+	Id           string
+	CreatedAt    time.Time
+	Title        string
+	Content      string
+	ShortContent *string
+	Context      string
+	IsRead       bool
+	// HospitalId          *string
+	// FormId              *string
+	// FormVersionId       *string
+	// FormEntryId         *string
+	// FormEntryApprovalId *string
+	// FormEntryPeriodId   *string
 }
 
 type DetailNotificationRequest struct {
@@ -29,17 +29,17 @@ type DetailNotificationRequest struct {
 }
 
 type DetailNotification struct {
-	Id                     string
-	CreatedAt              time.Time
-	UserId                 string
-	UserName               string
-	UserProfilePictureUrl  string
-	Title                  string
-	Content                string
-	ShortContent           *string
-	Context                string
-	IsRead                 bool
-	HospitalId             *string
+	Id                    string
+	CreatedAt             time.Time
+	UserId                string
+	UserName              string
+	UserProfilePictureUrl string
+	Title                 string
+	Content               string
+	ShortContent          *string
+	Context               string
+	IsRead                bool
+	// HospitalId             *string
 	HospitalName           *string
 	FormId                 *string
 	FormName               *string

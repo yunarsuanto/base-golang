@@ -8,6 +8,9 @@ import (
 
 type AuthHandlerInterface interface {
 	Login(w http.ResponseWriter, r *http.Request)
+	LoginWithGoogle(w http.ResponseWriter, r *http.Request)
+	Verify(w http.ResponseWriter, r *http.Request)
+	RefreshToken(w http.ResponseWriter, r *http.Request)
 }
 
 func NewAuthHandler(serviceCtx *service.ServiceCtx) AuthHandlerInterface {

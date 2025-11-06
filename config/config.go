@@ -37,6 +37,7 @@ type ServerConfig struct {
 	StorageProvider        string
 	LocalStoragePath       string
 	LogoUrl                string
+	UrlFrontend            string
 }
 
 // DBConfig struct to handle database configuration
@@ -62,6 +63,7 @@ type JwtConfig struct {
 	Secret               string
 	AccessTokenDuration  int // by minutes
 	RefreshTokenDuration int // by months
+	ClientId             string
 }
 
 type SsoConfig struct {

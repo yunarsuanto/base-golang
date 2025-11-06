@@ -7,9 +7,9 @@ const (
 )
 
 const (
-	MailChangePasswordSubject                 = "Primaya Hospital - Ubah Kata Sandi"
+	MailChangePasswordSubject                 = "Serenus - Ubah Kata Sandi"
 	MailFormVersionVerificationRequestSubject = "Pengajuan Verifikasi - %s"
-	MailCustomSubject                         = "Primaya Hospital - %s"
+	MailCustomSubject                         = "Serenus - %s"
 )
 
 const (

@@ -8,3 +8,10 @@ func NullScan[T any](data *T) T {
 
 	return *data
 }
+
+func ToNullScan[T comparable](data T, zero T) *T {
+	if data == zero {
+		return nil
+	}
+	return &data
+}

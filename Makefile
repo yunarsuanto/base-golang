@@ -35,6 +35,10 @@ dbDown:
 	goose -dir migrations postgres "user=postgres password=balakutak dbname=umkm sslmode=disable" down
 dbCreate:
 	goose -dir migrations create create_$(name)_table sql
+dbSeed: 
+	go run main.go seed
+genCrud: 
+	go run main.go crud $(name)
 deploy:
 	# CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 	# zip -r ./migrations.zip ./data/migrations

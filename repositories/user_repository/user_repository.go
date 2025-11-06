@@ -3,7 +3,6 @@ package user_repository
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/yunarsuanto/base-go/constants"
@@ -12,50 +11,83 @@ import (
 	"github.com/yunarsuanto/base-go/utils"
 )
 
-type userRepository struct{}
+type repository struct{}
 
-func mapQueryFilterGetList(search string, req objects.ListUserRequest, params *[]any) string {
-	var filterArray []string
+func (repository) GetByUsername(ctx context.Context, tx *sqlx.Tx, username string) (models.ListUser, *constants.ErrorResponse) {
+	var result models.ListUser
 
-	if search != "" {
-		searchParams := fmt.Sprintf("%%%s%%", search)
-		filterArray = append(filterArray, "u.email LIKE ? OR u.username LIKE ? OR u.name LIKE ?")
-		(*params) = append((*params), searchParams, searchParams, searchParams)
+	params := []any{
+		username,
 	}
-	if req.IsReporter != nil {
-		filterArray = append(filterArray, "ur.is_reporter = ?")
-		(*params) = append((*params), *req.IsReporter)
-	}
-	if req.IsVerificator != nil {
-		filterArray = append(filterArray, "ur.is_verificator = ?")
-		(*params) = append((*params), *req.IsVerificator)
-	}
-	if req.IsActive != nil {
-		filterArray = append(filterArray, "u.is_active = ?")
-		(*params) = append((*params), *req.IsActive)
+	err := tx.GetContext(
+		ctx,
+		&result,
+		fmt.Sprintf("SELECT %s %s WHERE (u.username = $1)", result.ColumnQuery(), result.TableQuery()),
+		params...,
+	)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.UserDataName)
 	}
 
-	result := strings.Join(filterArray, " AND ")
-	if result != "" {
-		result = fmt.Sprintf("WHERE %s", result)
-	}
-
-	return result
+	return result, nil
 }
 
-func (userRepository) GetList(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination, req objects.ListUserRequest) ([]models.GetUser, *constants.ErrorResponse) {
-	var result []models.GetUser
-	var query models.GetUser
+func (repository) GetById(ctx context.Context, tx *sqlx.Tx, id string) (models.ListUser, *constants.ErrorResponse) {
+	var result models.ListUser
+
+	params := []any{
+		id,
+	}
+	err := tx.GetContext(
+		ctx,
+		&result,
+		fmt.Sprintf("SELECT %s %s WHERE (u.id = $1)", result.ColumnQuery(), result.TableQuery()),
+		params...,
+	)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.UserDataName)
+	}
+
+	return result, nil
+}
+
+func (repository) GetByTokenVerification(ctx context.Context, tx *sqlx.Tx, tokenVerification string) (models.ListUser, *constants.ErrorResponse) {
+	var result models.ListUser
+
+	params := []any{
+		tokenVerification,
+	}
+	err := tx.GetContext(
+		ctx,
+		&result,
+		fmt.Sprintf("SELECT %s %s WHERE (u.token_verification = $1)", result.ColumnQuery(), result.TableQuery()),
+		params...,
+	)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.UserDataName)
+	}
+
+	return result, nil
+}
+
+func (repository) ListUser(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination) ([]models.ListUser, *constants.ErrorResponse) {
+	var result []models.ListUser
+	var query models.ListUser
 
 	params := []any{}
-	filterQuery := mapQueryFilterGetList(pagination.Search, req, &params)
+
+	filterQuery, err := mapQueryFilterListUser(pagination.Search, &params)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.UserDataName)
+	}
+
 	getQuery := fmt.Sprintf("SELECT %s %s %s", query.ColumnQuery(), query.TableQuery(), filterQuery)
 	countQuery := fmt.Sprintf("SELECT COUNT(1) %s %s", query.TableQuery(), filterQuery)
-	if errs := utils.QueryOperation(&getQuery, [][2]string{{"u.name", constants.Ascending}}, pagination.Limit, pagination.Page); errs != nil {
+	if errs := utils.QueryOperation(&getQuery, [][2]string{{"u.username", constants.Ascending}}, pagination.Limit, pagination.Page); errs != nil {
 		return result, errs
 	}
 
-	err := tx.SelectContext(
+	err = tx.SelectContext(
 		ctx,
 		&result,
 		getQuery,
@@ -76,103 +108,21 @@ func (userRepository) GetList(ctx context.Context, tx *sqlx.Tx, pagination *obje
 	}
 
 	pagination.GetPagination(count)
-
 	return result, nil
 }
 
-func (userRepository) GetById(ctx context.Context, tx *sqlx.Tx, userId string) (models.GetUser, *constants.ErrorResponse) {
-	var result models.GetUser
+func (repository) DetailUser(ctx context.Context, tx *sqlx.Tx, id string) ([]models.DetailUser, *constants.ErrorResponse) {
+	var result []models.DetailUser
+	var query models.DetailUser
 
-	err := tx.GetContext(
+	params := []any{id}
+
+	getQuery := fmt.Sprintf("SELECT %s %s %s", query.ColumnQuery(), query.TableQuery(), query.FilterQuery())
+
+	err := tx.SelectContext(
 		ctx,
 		&result,
-		fmt.Sprintf("SELECT %s %s WHERE u.id = ?", result.ColumnQuery(), result.TableQuery()),
-		userId,
-	)
-	if err != nil {
-		return result, utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return result, nil
-}
-
-func (userRepository) GetByEmployeeId(ctx context.Context, tx *sqlx.Tx, employeeId string) (models.GetUser, *constants.ErrorResponse) {
-	var result models.GetUser
-
-	err := tx.GetContext(
-		ctx,
-		&result,
-		fmt.Sprintf("SELECT %s %s WHERE u.employee_id = ?", result.ColumnQuery(), result.TableQuery()),
-		employeeId,
-	)
-	if err != nil {
-		return result, utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return result, nil
-}
-
-func (userRepository) Create(ctx context.Context, tx *sqlx.Tx, data models.CreateUser) *constants.ErrorResponse {
-	_, err := tx.NamedExecContext(
-		ctx,
-		createQuery,
-		data,
-	)
-	if err != nil {
-		return utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return nil
-}
-
-func (userRepository) Update(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse {
-	_, err := tx.NamedExecContext(
-		ctx,
-		updateQuery,
-		data,
-	)
-	if err != nil {
-		return utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return nil
-}
-
-func (userRepository) Delete(ctx context.Context, tx *sqlx.Tx, id string) *constants.ErrorResponse {
-	_, err := tx.ExecContext(
-		ctx,
-		deleteQuery,
-		id,
-	)
-	if err != nil {
-		return utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return nil
-}
-
-func (userRepository) GetByEmail(ctx context.Context, tx *sqlx.Tx, email, username, excludingId string) (models.GetUser, *constants.ErrorResponse) {
-	var result models.GetUser
-
-	params := []any{
-		email,
-	}
-	if username != "" {
-		params = append(params, username)
-	} else {
-		params = append(params, email)
-	}
-
-	var additionalFilter string
-	if excludingId != "" {
-		additionalFilter = `AND u.id != ? AND u.employee_id != ?`
-		params = append(params, excludingId, excludingId)
-	}
-
-	err := tx.GetContext(
-		ctx,
-		&result,
-		fmt.Sprintf("SELECT %s %s WHERE (u.email LIKE ? OR u.username LIKE ?) %s", result.ColumnQuery(), result.TableQuery(), additionalFilter),
+		getQuery,
 		params...,
 	)
 	if err != nil {
@@ -182,62 +132,10 @@ func (userRepository) GetByEmail(ctx context.Context, tx *sqlx.Tx, email, userna
 	return result, nil
 }
 
-func (userRepository) GetByIdNumber(ctx context.Context, tx *sqlx.Tx, idNumber, excludingId string) (models.GetUser, *constants.ErrorResponse) {
-	var result models.GetUser
-
-	params := []any{
-		idNumber,
-	}
-
-	var additionalFilter string
-	if excludingId != "" {
-		additionalFilter = `AND u.id != ? AND u.employee_id != ?`
-		params = append(params, excludingId, excludingId)
-	}
-
-	err := tx.GetContext(
-		ctx,
-		&result,
-		fmt.Sprintf("SELECT %s %s WHERE u.employee_number = ? %s", result.ColumnQuery(), result.TableQuery(), additionalFilter),
-		params...,
-	)
-	if err != nil {
-		return result, utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return result, nil
-}
-
-func (userRepository) GetByPhoneNumber(ctx context.Context, tx *sqlx.Tx, phoneNumber, excludingId string) (models.GetUser, *constants.ErrorResponse) {
-	var result models.GetUser
-
-	params := []any{
-		phoneNumber,
-	}
-
-	var additionalFilter string
-	if excludingId != "" {
-		additionalFilter = `AND u.id != ? AND u.employee_id != ?`
-		params = append(params, excludingId, excludingId)
-	}
-
-	err := tx.GetContext(
-		ctx,
-		&result,
-		fmt.Sprintf("SELECT %s %s WHERE u.phone_number = ? %s", result.ColumnQuery(), result.TableQuery(), additionalFilter),
-		params...,
-	)
-	if err != nil {
-		return result, utils.ErrDatabase(err, models.UserDataName)
-	}
-
-	return result, nil
-}
-
-func (userRepository) ChangePassword(ctx context.Context, tx *sqlx.Tx, data models.ChangeUserPassword) *constants.ErrorResponse {
+func (repository) CreateUser(ctx context.Context, tx *sqlx.Tx, data models.CreateUser) *constants.ErrorResponse {
 	_, err := tx.NamedExecContext(
 		ctx,
-		changePasswordQuery,
+		data.InsertQuery(),
 		data,
 	)
 	if err != nil {
@@ -246,11 +144,10 @@ func (userRepository) ChangePassword(ctx context.Context, tx *sqlx.Tx, data mode
 
 	return nil
 }
-
-func (userRepository) UpdateProfile(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse {
+func (repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, data models.UpdateUser) *constants.ErrorResponse {
 	_, err := tx.NamedExecContext(
 		ctx,
-		updateProfileQuery,
+		data.InsertQuery(),
 		data,
 	)
 	if err != nil {
@@ -259,17 +156,51 @@ func (userRepository) UpdateProfile(ctx context.Context, tx *sqlx.Tx, data model
 
 	return nil
 }
+func (repository) DeleteUser(ctx context.Context, tx *sqlx.Tx, data models.DeleteUser) *constants.ErrorResponse {
+	_, err := tx.NamedExecContext(
+		ctx,
+		data.InsertQuery(),
+		data,
+	)
+	if err != nil {
+		return utils.ErrDatabase(err, models.UserDataName)
+	}
 
-func (userRepository) UpdateActivation(ctx context.Context, tx *sqlx.Tx, id string, isActive bool) *constants.ErrorResponse {
-	// _, err := tx.ExecContext(
-	// 	ctx,
-	// 	updateActivationQuery,
-	// 	isActive,
-	// 	id,
-	// )
-	// if err != nil {
-	// 	return utils.ErrDatabase(err, models.ClusterDataName)
-	// }
+	return nil
+}
+func (repository) UpdateTokenVerification(ctx context.Context, tx *sqlx.Tx, data models.UpdateUserTokenVerification) *constants.ErrorResponse {
+	_, err := tx.NamedExecContext(
+		ctx,
+		data.InsertQuery(),
+		data,
+	)
+	if err != nil {
+		return utils.ErrDatabase(err, models.UserDataName)
+	}
+
+	return nil
+}
+func (repository) UpdateTokenVerificationIsActiveUser(ctx context.Context, tx *sqlx.Tx, data models.UpdateUserIsActiveTokenVerification) *constants.ErrorResponse {
+	_, err := tx.NamedExecContext(
+		ctx,
+		data.InsertQuery(),
+		data,
+	)
+	if err != nil {
+		return utils.ErrDatabase(err, models.UserDataName)
+	}
+
+	return nil
+}
+func (repository) CreateUserProfile(ctx context.Context, tx *sqlx.Tx, data models.CreateUserProfile) *constants.ErrorResponse {
+	_, err := tx.NamedExecContext(
+		ctx,
+		data.InsertQuery(),
+		data,
+	)
+	if err != nil {
+		return utils.ErrDatabase(err, models.UserDataName)
+	}
 
 	return nil
 }

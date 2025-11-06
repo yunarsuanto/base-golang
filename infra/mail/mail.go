@@ -69,7 +69,9 @@ func (a mailService) createMailTemplate(files []string, data any) (string, *cons
 
 	templateFuncMap := template.FuncMap{
 		"year": func() string { return time.Now().Format("2006") },
-		"logo": func() string { return a.Server.LogoUrl },
+		"logo": func() template.HTML {
+			return template.HTML(a.Server.LogoUrl)
+		},
 	}
 
 	files = append([]string{constants.BaseMailTemplate}, files...)

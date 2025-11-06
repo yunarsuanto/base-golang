@@ -10,58 +10,53 @@ import (
 	"github.com/yunarsuanto/base-go/objects"
 )
 
-func (a service) getUserPermissions(ctx context.Context, tx *sqlx.Tx, platform, userId string) ([]models.GetPermissionCode, *constants.ErrorResponse) {
-	var result []models.GetPermissionCode
+func (a service) getAdminPermissions(ctx context.Context, tx *sqlx.Tx, userId string, isSuperAdmin bool) (string, []models.GetPermissionName, *constants.ErrorResponse) {
+	var result []models.GetPermissionName
 
-	var permissionCode string
-	switch platform {
-	case constants.WebPlatform:
-		permissionCode = constants.PermissionAccessWeb
-	case constants.MobilePlatform:
-		permissionCode = constants.PermissionAccessMobile
-	default:
-		_ = tx.Rollback()
-		return result, constants.ErrIneligibleAccess
-	}
-	roleData, errs := a.UserRoleRepo.GetList(ctx, tx, objects.NewPagination().AllData(), objects.ListUsersRolesRequest{UserIds: []string{userId}})
+	// var permissionCode string
+	// switch platform {
+	// case constants.WebPlatform:
+	// 	permissionCode = constants.PermissionAccessWeb
+	// case constants.MobilePlatform:
+	// 	permissionCode = constants.PermissionAccessMobile
+	// default:
+	// 	_ = tx.Rollback()
+	// 	return result, constants.ErrIneligibleAccess
+	// }
+
+	roleData, errs := a.UserRoleRepo.GetByUserId(ctx, tx, objects.ListUserRoleRequest{UserId: userId})
 	if errs != nil {
-		return result, errs
-	}
-	if len(roleData) == 0 {
-		return result, constants.ErrIneligibleAccess
+		return "", result, errs
 	}
 
-	roleIds := make([]string, len(roleData))
-	for i, v := range roleData {
-		roleIds[i] = v.RoleId
+	// if roleData.Id == "" && !isSuperAdmin {
+	// 	return result, constants.ErrIneligibleAccess
+	// }
+
+	if !isSuperAdmin && roleData.Id != "" {
+		result, errs = a.RolePermissionRepo.GetDistinctPermissionByRoleId(ctx, tx, roleData.RoleId)
+		if errs != nil {
+			_ = tx.Rollback()
+			return "", result, errs
+		}
 	}
 
-	_, errs = a.RolePermissionRepo.GetByRoleIdsPermissionCode(ctx, tx, roleIds, permissionCode)
-	if errs != nil {
-		return result, errs
-	}
-
-	result, errs = a.RolePermissionRepo.GetDistinctPermissionByRoleIds(ctx, tx, roleIds)
-	if errs != nil {
-		_ = tx.Rollback()
-		return result, errs
-	}
-
-	return result, nil
+	return roleData.RoleName, result, nil
 }
 
-func (a service) generateToken(ctx context.Context, tx *sqlx.Tx, platform, fcmToken string, userData models.GetUser, permissionData []models.GetPermissionCode) (objects.Login, *constants.ErrorResponse) {
-	var result objects.Login
+func (a service) generateToken(ctx context.Context, platform, fcmToken string, userData models.ListUser, permissionData []models.GetPermissionName, isSuperAdmin bool, roleName string) (objects.LoginResponse, *constants.ErrorResponse) {
+	var result objects.LoginResponse
 
 	permissions := make([]string, len(permissionData))
 	for i, v := range permissionData {
-		permissions[i] = v.PermissionCode
+		permissions[i] = v.PermissionName
 	}
 
 	accessTokenData := objects.JWTRequest{
 		Id:          userData.Id,
 		Platform:    platform,
 		Permissions: permissions,
+		Role:        roleName,
 	}
 	accessTokenDuration := time.Duration(a.Config.JwtConfig.AccessTokenDuration) * time.Minute
 	refreshTokenData := objects.JWTRequest{
@@ -70,32 +65,21 @@ func (a service) generateToken(ctx context.Context, tx *sqlx.Tx, platform, fcmTo
 	}
 	refreshTokenDuration := time.Duration(a.Config.JwtConfig.RefreshTokenDuration) * time.Hour * 24 * 30
 
-	accessToken, errs := a.Jwt.GenerateJWTToken(ctx, accessTokenData, accessTokenDuration, constants.AppName, constants.RedisKeyAccessToken)
+	accessToken, errs := a.Jwt.GenerateJWTToken(ctx, accessTokenData, accessTokenDuration, constants.AppName, constants.RedisKeyAccessToken, isSuperAdmin)
 	if errs != nil {
 		return result, errs
 	}
-	refreshToken, errs := a.Jwt.GenerateJWTToken(ctx, refreshTokenData, refreshTokenDuration, constants.AppName, constants.RedisKeyRefreshToken)
-	if errs != nil {
-		return result, errs
-	}
-
-	errs = a.UserTokenRepo.Upsert(ctx, tx, models.UpsertUserToken{
-		UserId:     userData.Id,
-		Platform:   platform,
-		FcmToken:   fcmToken,
-		ExpiryTime: time.Now().Add(refreshTokenDuration),
-	})
+	refreshToken, errs := a.Jwt.GenerateJWTToken(ctx, refreshTokenData, refreshTokenDuration, constants.AppName, constants.RedisKeyRefreshToken, isSuperAdmin)
 	if errs != nil {
 		return result, errs
 	}
 
-	result = objects.Login{
-		AccessToken:   accessToken,
-		RefreshToken:  refreshToken,
-		ExpiredAt:     time.Now().Add(accessTokenDuration),
-		IsReporter:    userData.IsReporter,
-		IsVerificator: userData.IsVerificator,
-		Permissions:   permissions,
+	result = objects.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiredAt:    time.Now().Add(accessTokenDuration),
+		Permissions:  permissions,
+		Role:         roleName,
 	}
 
 	return result, nil

@@ -2,6 +2,8 @@ package jwt
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -21,7 +23,9 @@ type JWTInterface interface {
 	ValidateTokenExpire(ctx context.Context, claims *objects.JWTClaims, reqToken string, appName string, purpose string) *constants.ErrorResponse
 
 	DeleteTokenFromRedis(ctx context.Context, claims *objects.JWTClaims, purpose string, appName string) *constants.ErrorResponse
-	GenerateJWTToken(ctx context.Context, request objects.JWTRequest, expireTime time.Duration, appName string, purpose string) (string, *constants.ErrorResponse)
+	GenerateJWTToken(ctx context.Context, request objects.JWTRequest, expireTime time.Duration, appName string, purpose string, isSuperAdmin bool) (string, *constants.ErrorResponse)
+
+	ExtractJwtRefrehToken(ctx context.Context, token string) (claims *objects.JWTClaims, errs *constants.ErrorResponse)
 }
 
 // jwtObj struct
@@ -57,6 +61,9 @@ func (j *jwtObj) ExtractJWTClaims(ctx context.Context, token string, appName, mi
 	reqToken := strings.TrimSpace(splitToken[1])
 
 	t, err := jwt.ParseWithClaims(reqToken, &objects.JWTClaims{}, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return []byte(j.config.Secret), nil
 	})
 	if err != nil {
@@ -132,7 +139,7 @@ func (j *jwtObj) DeleteTokenFromRedis(ctx context.Context, claims *objects.JWTCl
 // id: user ID / admin ID
 // authKey: redis authorization key
 // Returns *constants.ErrorResponse
-func (j *jwtObj) GenerateJWTToken(ctx context.Context, request objects.JWTRequest, expireTime time.Duration, appName string, purpose string) (string, *constants.ErrorResponse) {
+func (j *jwtObj) GenerateJWTToken(ctx context.Context, request objects.JWTRequest, expireTime time.Duration, appName string, purpose string, isSuperAdmin bool) (string, *constants.ErrorResponse) {
 	JWTSignatureKey := []byte(j.config.Secret)
 	claims := objects.JWTClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -141,11 +148,11 @@ func (j *jwtObj) GenerateJWTToken(ctx context.Context, request objects.JWTReques
 			ExpiresAt: time.Now().Add(time.Duration(expireTime)).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
-		Id:          request.Id,
-		Purpose:     purpose,
-		Platform:    request.Platform,
-		UniqueKey:   utils.RandomString(6),
-		Permissions: request.Permissions,
+		Purpose:      purpose,
+		Platform:     request.Platform,
+		UniqueKey:    utils.RandomString(6),
+		Permissions:  request.Permissions,
+		IsSuperAdmin: isSuperAdmin,
 	}
 
 	token := jwt.NewWithClaims(
@@ -175,4 +182,33 @@ func (j *jwtObj) setTokenToRedis(ctx context.Context, token string, expireTime t
 	}
 
 	return nil
+}
+
+func (j *jwtObj) ExtractJwtRefrehToken(ctx context.Context, tokenString string) (claims *objects.JWTClaims, errs *constants.ErrorResponse) {
+	JWTSignatureKey := []byte(j.config.Secret)
+
+	token, err := jwt.ParseWithClaims(tokenString, &objects.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return JWTSignatureKey, nil
+	})
+	if err != nil {
+		var ve *jwt.ValidationError
+		if errors.As(err, &ve) {
+			switch {
+			case ve.Errors&jwt.ValidationErrorMalformed != 0:
+				return nil, constants.ErrTokenIsRequired
+			case ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0:
+				return nil, constants.ErrTokenIsRequired
+			default:
+				return nil, constants.ErrTokenIsRequired
+			}
+		}
+		return nil, constants.ErrTokenIsRequired
+	}
+	if claims, ok := token.Claims.(*objects.JWTClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return claims, nil
 }

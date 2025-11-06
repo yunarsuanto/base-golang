@@ -1,0 +1,33 @@
+{{ define "email-body" }}
+<div class="email-body">
+  <p>Dear {{ .RoleName }},</p>
+  <p>
+    Telah diajukan versi terbaru dari formulir "{{ .FormName }}" yang memerlukan tinjauan dan persetujuan dari Anda.
+  </p>
+  <table class="table-group">
+    <tr class="table-row">
+      <td>Versi</td>
+      <td>: {{ .FormVersionName }}</td>
+    </tr>
+    <tr class="table-row">
+      <td>Nama Modul</td>
+      <td>: {{ .ModuleName }}</td>
+    </tr>
+    <tr class="table-row">
+      <td>Jenis Formulir</td>
+      <td>: {{ .ReportType }}</td>
+    </tr>
+    <tr class="table-row">
+      <td>Diajukan oleh</td>
+      <td>: {{ .CreatedBy }}</td>
+    </tr>
+  </table>
+  <p>Mohon ketersediaannya untuk meninjau dan berikan persetujuan Anda melalui tautan berikut:</p>
+  <div class="button-group">
+    <a href="{{ .DetailUrl }}" target="_blank" class="btn detail">Lihat Detail</a>
+  </div>
+  <div class="closing">
+    <p>Salam,<br />Serenus</p>
+  </div>
+</div>
+{{ end }}

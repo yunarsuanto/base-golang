@@ -17,6 +17,9 @@ bin/
 tmp/
 dist/
 build/
+migrations.zip
+templates.zip
+yokila-be
 
 # OS generated files
 Thumbs.db

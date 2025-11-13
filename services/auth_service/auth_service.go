@@ -106,8 +106,8 @@ func (a service) LoginWithGoogle(ctx context.Context, data objects.LoginWithGoog
 			Username:   claims.Email,
 			Password:   pass,
 			IsActive:   false,
-			ProviderId: data.Token,
-			Provider:   "google",
+			ProviderId: utils.ConvertStringToNil(data.Token),
+			Provider:   utils.ConvertStringToNil("google"),
 		})
 		if errs != nil {
 			_ = tx.Rollback()

@@ -1,8 +1,6 @@
 package user_handler
 
 import (
-	"fmt"
-
 	"github.com/yunarsuanto/base-go/constants"
 	common_input_handler "github.com/yunarsuanto/base-go/handler"
 	"github.com/yunarsuanto/base-go/objects"
@@ -96,9 +94,6 @@ func (a handler) checkPermission(ctx context.Context, permission string) *consta
 	if !ok || claims == nil {
 		return constants.ErrTokenInvalid
 	}
-	fmt.Print("------------claims.Id")
-	fmt.Print(claims.Id)
-	fmt.Print("------------claims.Id")
 	if !claims.IsSuperAdmin {
 		if !utils.InArrayExist(permission, claims.Permissions) {
 			return constants.ErrIneligibleAccess

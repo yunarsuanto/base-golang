@@ -31,11 +31,11 @@ func (ListUser) TableQuery() string {
 }
 
 type CreateUser struct {
-	Username   string `db:"username"`
-	Password   string `db:"password"`
-	IsActive   bool   `db:"is_active"`
-	ProviderId string `db:"provider_id"`
-	Provider   string `db:"provider"`
+	Username   string  `db:"username"`
+	Password   string  `db:"password"`
+	IsActive   bool    `db:"is_active"`
+	ProviderId *string `db:"provider_id"`
+	Provider   *string `db:"provider"`
 }
 
 func (CreateUser) InsertQuery() string {

@@ -16,7 +16,7 @@ type service struct {
 	*infra.InfraCtx
 }
 
-func (a service) ListCategoryLesson(ctx context.Context, pagination *objects.Pagination, hasParent bool) ([]objects.ListCategoryLessonResponse, *constants.ErrorResponse) {
+func (a service) ListCategoryLesson(ctx context.Context, pagination *objects.Pagination) ([]objects.ListCategoryLessonResponse, *constants.ErrorResponse) {
 	var result []objects.ListCategoryLessonResponse
 
 	tx, err := a.Db.Begin(ctx)
@@ -24,7 +24,7 @@ func (a service) ListCategoryLesson(ctx context.Context, pagination *objects.Pag
 		return result, utils.ErrorInternalServer(err.Error())
 	}
 
-	resultData, errs := a.CategoryLessonRepo.ListCategoryLesson(ctx, tx, pagination, hasParent)
+	resultData, errs := a.CategoryLessonRepo.ListCategoryLesson(ctx, tx, pagination)
 	if errs != nil {
 		_ = tx.Rollback()
 		return result, errs
@@ -43,8 +43,8 @@ func (a service) ListCategoryLesson(ctx context.Context, pagination *objects.Pag
 	return result, nil
 }
 
-func (a service) DetailCategoryLesson(ctx context.Context, req objects.DetailCategoryLessonRequest) ([]objects.DetailCategoryLessonResponse, *constants.ErrorResponse) {
-	var result []objects.DetailCategoryLessonResponse
+func (a service) DetailCategoryLesson(ctx context.Context, req objects.DetailCategoryLessonRequest) (objects.DetailCategoryLessonResponse, *constants.ErrorResponse) {
+	var result objects.DetailCategoryLessonResponse
 
 	tx, err := a.Db.Begin(ctx)
 	if err != nil {
@@ -57,15 +57,7 @@ func (a service) DetailCategoryLesson(ctx context.Context, req objects.DetailCat
 		return result, errs
 	}
 
-	for _, v := range resultData {
-		result = append(result, objects.DetailCategoryLessonResponse{
-			Id:               v.Id,
-			Title:            v.Title,
-			Description:      v.Description,
-			CategoryLessonId: v.CategoryLessonId,
-			Media:            v.Media,
-		})
-	}
+	result = objects.DetailCategoryLessonResponse(resultData)
 
 	err = tx.Commit()
 	if err != nil {
@@ -83,10 +75,10 @@ func (a service) CreateCategoryLesson(ctx context.Context, req objects.CreateCat
 	}
 
 	createData := models.CreateCategoryLesson{
-		Title:            req.Title,
-		Description:      req.Description,
-		CategoryLessonId: utils.ToNullScan(req.CategoryLessonId, ""),
-		Media:            req.Media,
+		Title:              req.Title,
+		Description:        req.Description,
+		CategoryLessonType: req.CategoryLessonType,
+		Media:              req.Media,
 	}
 
 	errs := a.CategoryLessonRepo.CreateCategoryLesson(ctx, tx, createData)
@@ -110,11 +102,11 @@ func (a service) UpdateCategoryLesson(ctx context.Context, req objects.UpdateCat
 	}
 
 	updateData := models.UpdateCategoryLesson{
-		Id:               req.Id,
-		Title:            req.Title,
-		Description:      req.Description,
-		CategoryLessonId: utils.ToNullScan(req.CategoryLessonId, ""),
-		Media:            req.Media,
+		Id:                 req.Id,
+		Title:              req.Title,
+		Description:        req.Description,
+		CategoryLessonType: req.CategoryLessonType,
+		Media:              req.Media,
 	}
 
 	errs := a.CategoryLessonRepo.UpdateCategoryLesson(ctx, tx, updateData)
@@ -154,4 +146,29 @@ func (a service) DeleteCategoryLesson(ctx context.Context, req objects.DeleteCat
 	}
 
 	return nil
+}
+
+func (a service) CategoryLessonPublic(ctx context.Context) (objects.ListCategoryLessonPublicResponse, *constants.ErrorResponse) {
+	var result objects.ListCategoryLessonPublicResponse
+
+	tx, err := a.Db.Begin(ctx)
+	if err != nil {
+		return result, utils.ErrorInternalServer(err.Error())
+	}
+
+	resultData, errs := a.CategoryLessonRepo.CategoryLessonPublic(ctx, tx)
+	if errs != nil {
+		_ = tx.Rollback()
+		return result, errs
+	}
+
+	result = objects.ListCategoryLessonPublicResponse(resultData)
+
+	err = tx.Commit()
+	if err != nil {
+		_ = tx.Rollback()
+		return result, utils.ErrorInternalServer(err.Error())
+	}
+
+	return result, nil
 }

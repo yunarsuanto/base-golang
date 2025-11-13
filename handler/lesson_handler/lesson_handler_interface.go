@@ -12,6 +12,7 @@ type LessonHandlerInterface interface {
 	CreateLesson(w http.ResponseWriter, r *http.Request)
 	UpdateLesson(w http.ResponseWriter, r *http.Request)
 	DeleteLesson(w http.ResponseWriter, r *http.Request)
+	CopyLessonItem(w http.ResponseWriter, r *http.Request)
 }
 
 func NewLessonHandler(serviceCtx *service.ServiceCtx) LessonHandlerInterface {

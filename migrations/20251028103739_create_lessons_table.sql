@@ -1,14 +1,35 @@
 -- +goose Up
 -- +goose StatementBegin
 
+CREATE TYPE lessons_type AS ENUM (
+  'recognition',
+  'identification',
+  'matching',
+  'clasification',
+  'sequence',
+  'looping',
+  'puzzle'
+);
+
+CREATE TYPE category_lessons_type AS ENUM (
+  'basic',
+  'read',
+  'write',
+  'counting',
+  'logic',
+  'memory',
+  'language',
+  'problem_solving',
+  'story'
+);
 
 CREATE TABLE "category_lessons"
 (
   "id" uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
   "title" character varying(100) NOT NULL UNIQUE,
   "description" TEXT,
-  "category_lesson_id" uuid NULL REFERENCES "category_lessons" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "media" character varying(100) NOT NULL,
+  "category_lesson_type" category_lessons_type NOT NULL DEFAULT 'basic',
   "created_by" uuid NULL REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "updated_by" uuid NULL REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -29,6 +50,7 @@ CREATE TABLE "lessons"
   "category_lesson_id" uuid NULL REFERENCES "category_lessons" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "media" character varying(100) NOT NULL,
   "level" smallint NOT NULL DEFAULT 1,
+  "lesson_type" lessons_type NOT NULL DEFAULT 'recognition',
   "created_by" uuid NULL REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "updated_by" uuid NULL REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -48,10 +70,15 @@ CREATE TRIGGER "soft_delete_lessons" BEFORE DELETE ON "lessons" FOR EACH ROW EXE
 
 ---------------------------------------------
 
+
 DROP TABLE "deleted_lessons";
 DROP TABLE "lessons";
 
 DROP TABLE "deleted_category_lessons";
 DROP TABLE "category_lessons";
+
+DROP TYPE IF EXISTS lessons_type;
+DROP TYPE IF EXISTS category_lessons_type;
+
 
 -- +goose StatementEnd

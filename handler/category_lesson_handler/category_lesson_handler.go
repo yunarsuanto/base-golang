@@ -1,6 +1,7 @@
 package category_lesson_handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,6 +13,103 @@ import (
 
 type handler struct {
 	*service.ServiceCtx
+}
+
+func (a handler) ListCategoryLessonPublic(w http.ResponseWriter, r *http.Request) {
+	var result listCategoryLessonPublicResponse
+	permission := constants.PermissionCategoryLessonList
+
+	ctx := r.Context()
+
+	var in listCategoryLessonRequest
+	defer func() {
+		a.ActivityLogService.Create(ctx, objects.CreateActivityLog{
+			Request:      r,
+			Body:         utils.MaskBody(&in),
+			ResponseMeta: result.Meta,
+		})
+	}()
+
+	errs := utils.DecodeUrlQueryParams(&in, r.URL.Query())
+	if errs != nil {
+		result = listCategoryLessonPublicResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	pagination := objects.NewPagination()
+	pagination.MapFromRequest(in.PaginationRequest)
+
+	data, errs := a.CategoryLessonService.CategoryLessonPublic(ctx)
+	if errs != nil {
+		result = listCategoryLessonPublicResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	dataLessons, errs := a.LessonService.ListLesson(ctx, pagination, data.Id)
+	if errs != nil {
+		result = listCategoryLessonPublicResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	lessonIds := []string{}
+	for _, v := range dataLessons {
+		lessonIds = append(lessonIds, v.Id)
+	}
+
+	if len(lessonIds) == 0 {
+		result = listCategoryLessonPublicResponse{Meta: utils.SetErrorMeta(&constants.ErrorResponse{HttpCode: 500, Err: errors.New("NOT DATA")}, permission)}
+		utils.JSONResponse(w, http.StatusInternalServerError, &result)
+		return
+	}
+
+	dataLessonItems, errs := a.LessonItemService.ListLessonItemByLessonIds(ctx, lessonIds)
+	if errs != nil {
+		result = listCategoryLessonPublicResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	resultLessons := []listCategoryLessonPublicResponseDataLesson{}
+	for _, v := range dataLessons {
+		items := []listCategoryLessonPublicResponseDataLessonItem{}
+		for _, item := range dataLessonItems {
+			if item.LessonId == v.Id {
+				items = append(items, listCategoryLessonPublicResponseDataLessonItem{
+					Id:      item.Id,
+					Content: item.Content,
+					Order:   item.Order,
+					Media:   item.Media,
+				})
+			}
+		}
+		resultLessons = append(resultLessons, listCategoryLessonPublicResponseDataLesson{
+			Id:          v.Id,
+			Title:       v.Title,
+			Description: v.Description,
+			Level:       v.Level,
+			Media:       v.Media,
+			Items:       items,
+		})
+	}
+
+	resultData := listCategoryLessonPublicResponseData{
+		Id:                 data.Id,
+		Title:              data.Title,
+		Description:        data.Description,
+		CategoryLessonType: data.CategoryLessonType,
+		Media:              data.Media,
+		Lessons:            resultLessons,
+	}
+
+	result = listCategoryLessonPublicResponse{
+		Meta: utils.SetSuccessMeta("List Category Lesson Public", permission),
+		Data: resultData,
+	}
+
+	utils.JSONResponse(w, result.Meta.Status, &result)
 }
 
 func (a handler) ListCategoryLesson(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +142,7 @@ func (a handler) ListCategoryLesson(w http.ResponseWriter, r *http.Request) {
 
 	pagination := objects.NewPagination()
 	pagination.MapFromRequest(in.PaginationRequest)
-	data, errs := a.CategoryLessonService.ListCategoryLesson(ctx, pagination, in.HasParent)
+	data, errs := a.CategoryLessonService.ListCategoryLesson(ctx, pagination)
 	if errs != nil {
 		result = listCategoryLessonResponse{Meta: utils.SetErrorMeta(errs, permission)}
 		utils.JSONResponse(w, errs.HttpCode, &result)
@@ -54,39 +152,16 @@ func (a handler) ListCategoryLesson(w http.ResponseWriter, r *http.Request) {
 	resultData := []*listCategoryLessonResponseData{}
 	for _, v := range data {
 		resultData = append(resultData, &listCategoryLessonResponseData{
-			Id:               v.Id,
-			Title:            v.Title,
-			Description:      v.Description,
-			Media:            v.Media,
-			CategoryLessonId: utils.NullScan(v.CategoryLessonId),
+			Id:                 v.Id,
+			Title:              v.Title,
+			Description:        v.Description,
+			CategoryLessonType: v.CategoryLessonType,
+			Media:              v.Media,
 		})
 	}
-	// childMap := map[string][]listCategoryLessonResponseData{}
-	// for _, v := range data {
-	// 	if parentId := utils.NullScan(v.CategoryLessonId); parentId != "" {
-	// 		childMap[parentId] = append(childMap[parentId], listCategoryLessonResponseData{
-	// 			Id:               v.Id,
-	// 			Title:            v.Title,
-	// 			Description:      v.Description,
-	// 			Media:            v.Media,
-	// 			CategoryLessonId: parentId,
-	// 		})
-	// 	}
-	// }
-	// for _, v := range data {
-	// 	if utils.NullScan(v.CategoryLessonId) == "" {
-	// 		resultData = append(resultData, &listCategoryLessonResponseData{
-	// 			Id:                  v.Id,
-	// 			Title:               v.Title,
-	// 			Description:         v.Description,
-	// 			Media:               v.Media,
-	// 			CategoryLessonChild: childMap[v.Id],
-	// 		})
-	// 	}
-	// }
 
 	result = listCategoryLessonResponse{
-		Meta:       utils.SetSuccessMeta("List CategoryLesson", permission),
+		Meta:       utils.SetSuccessMeta("List Category Lesson", permission),
 		Pagination: pagination.MapToResponse(),
 		Data:       resultData,
 	}
@@ -132,30 +207,16 @@ func (a handler) DetailCategoryLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultData := detailCategoryLessonDataResponse{}
-	childs := []listCategoryLessonResponseData{}
-	for _, v := range data {
-		if req.Id == v.Id {
-			resultData = detailCategoryLessonDataResponse{
-				Id:               v.Id,
-				Title:            v.Title,
-				Description:      v.Description,
-				Media:            v.Media,
-				CategoryLessonId: utils.NullScan(v.CategoryLessonId),
-			}
-		} else if utils.NullScan(v.CategoryLessonId) == req.Id {
-			childs = append(childs, listCategoryLessonResponseData{
-				Id:               v.Id,
-				Title:            v.Title,
-				Description:      v.Description,
-				Media:            v.Media,
-				CategoryLessonId: utils.NullScan(v.CategoryLessonId),
-			})
-		}
+	resultData := detailCategoryLessonDataResponse{
+		Id:                 data.Id,
+		Title:              data.Title,
+		Description:        data.Description,
+		CategoryLessonType: data.CategoryLessonType,
+		Media:              data.Media,
 	}
-	resultData.Childs = childs
+
 	result = detailCategoryLessonResponse{
-		Meta: utils.SetSuccessMeta("Detail CategoryLesson", permission),
+		Meta: utils.SetSuccessMeta("Detail Category Lesson", permission),
 		Data: resultData,
 	}
 
@@ -198,7 +259,7 @@ func (a handler) CreateCategoryLesson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result = createCategoryLessonResponse{
-		Meta: utils.SetSuccessMeta("Create CategoryLesson", permission),
+		Meta: utils.SetSuccessMeta("Create Category Lesson", permission),
 	}
 	utils.JSONResponse(w, result.Meta.Status, &result)
 }
@@ -238,7 +299,7 @@ func (a handler) UpdateCategoryLesson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result = updateCategoryLessonResponse{
-		Meta: utils.SetSuccessMeta("Update CategoryLesson", permission),
+		Meta: utils.SetSuccessMeta("Update Category Lesson", permission),
 	}
 	utils.JSONResponse(w, result.Meta.Status, &result)
 }
@@ -278,7 +339,7 @@ func (a handler) DeleteCategoryLesson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result = deleteCategoryLessonResponse{
-		Meta: utils.SetSuccessMeta("Delete CategoryLesson", permission),
+		Meta: utils.SetSuccessMeta("Delete Category Lesson", permission),
 	}
 	utils.JSONResponse(w, result.Meta.Status, &result)
 }

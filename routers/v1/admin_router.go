@@ -46,6 +46,8 @@ func adminRouter(handlerCtx *handler.HandlerCtx, mw middleware.MiddlewareInterfa
 	a.HandleFunc("/lesson/update", handlerCtx.LessonHandler.UpdateLesson).Methods(http.MethodPatch)
 	a.HandleFunc("/lesson/delete", handlerCtx.LessonHandler.DeleteLesson).Methods(http.MethodDelete)
 
+	a.HandleFunc("/lesson/copy", handlerCtx.LessonHandler.CopyLessonItem).Methods(http.MethodPost)
+
 	a.HandleFunc("/lesson-item/get", handlerCtx.LessonItemHandler.ListLessonItem).Methods(http.MethodGet)
 	a.HandleFunc("/lesson-item/detail/{id}", handlerCtx.LessonItemHandler.DetailLessonItem).Methods(http.MethodGet)
 	a.HandleFunc("/lesson-item/create", handlerCtx.LessonItemHandler.CreateLessonItem).Methods(http.MethodPost)

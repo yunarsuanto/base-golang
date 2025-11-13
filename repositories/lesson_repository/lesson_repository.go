@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/yunarsuanto/base-go/constants"
 	"github.com/yunarsuanto/base-go/models"
@@ -17,7 +18,7 @@ func (repository) ListLesson(ctx context.Context, tx *sqlx.Tx, pagination *objec
 	var result []models.ListLesson
 	var query models.ListLesson
 
-	params := []any{categoryLessonId}
+	params := []any{}
 
 	filterQuery, err := mapQueryFilterListLesson(pagination.Search, &params, categoryLessonId)
 	if err != nil {
@@ -29,6 +30,7 @@ func (repository) ListLesson(ctx context.Context, tx *sqlx.Tx, pagination *objec
 	if errs := utils.QueryOperation(&getQuery, [][2]string{{"u.title", constants.Ascending}}, pagination.Limit, pagination.Page); errs != nil {
 		return result, errs
 	}
+
 	err = tx.SelectContext(
 		ctx,
 		&result,
@@ -36,6 +38,7 @@ func (repository) ListLesson(ctx context.Context, tx *sqlx.Tx, pagination *objec
 		params...,
 	)
 	if err != nil {
+		fmt.Println("kesini", err)
 		return result, utils.ErrDatabase(err, models.LessonDatatitle)
 	}
 
@@ -61,7 +64,6 @@ func (repository) DetailLesson(ctx context.Context, tx *sqlx.Tx, id string) (mod
 
 	getQuery := fmt.Sprintf("SELECT %s %s %s", query.ColumnQuery(), query.TableQuery(), query.FilterQuery())
 
-	utils.QueryLog(getQuery, params...)
 	err := tx.SelectContext(
 		ctx,
 		&result,
@@ -78,17 +80,23 @@ func (repository) DetailLesson(ctx context.Context, tx *sqlx.Tx, id string) (mod
 	return query, nil
 }
 
-func (repository) CreateLesson(ctx context.Context, tx *sqlx.Tx, data models.CreateLesson) *constants.ErrorResponse {
-	_, err := tx.NamedExecContext(
-		ctx,
-		data.InsertQuery(),
-		data,
-	)
+func (repository) CreateLesson(ctx context.Context, tx *sqlx.Tx, data models.CreateLesson) (string, *constants.ErrorResponse) {
+	var id uuid.UUID
+
+	query, args, err := sqlx.Named(data.InsertQuery(), data)
 	if err != nil {
-		return utils.ErrDatabase(err, models.LessonDatatitle)
+		return "", utils.ErrDatabase(err, models.LessonDatatitle)
 	}
 
-	return nil
+	query = tx.Rebind(query)
+
+	utils.QueryLog(query, args...)
+	err = tx.QueryRowxContext(ctx, query, args...).Scan(&id)
+	if err != nil {
+		return "", utils.ErrDatabase(err, models.LessonDatatitle)
+	}
+
+	return id.String(), nil
 }
 func (repository) UpdateLesson(ctx context.Context, tx *sqlx.Tx, data models.UpdateLesson) *constants.ErrorResponse {
 	_, err := tx.NamedExecContext(

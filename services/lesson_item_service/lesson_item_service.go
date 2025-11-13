@@ -16,7 +16,7 @@ type service struct {
 	*infra.InfraCtx
 }
 
-func (a service) ListLessonItem(ctx context.Context, pagination *objects.Pagination) ([]objects.ListLessonItemResponse, *constants.ErrorResponse) {
+func (a service) ListLessonItem(ctx context.Context, pagination *objects.Pagination, lessonId string) ([]objects.ListLessonItemResponse, *constants.ErrorResponse) {
 	var result []objects.ListLessonItemResponse
 
 	tx, err := a.Db.Begin(ctx)
@@ -24,7 +24,34 @@ func (a service) ListLessonItem(ctx context.Context, pagination *objects.Paginat
 		return result, utils.ErrorInternalServer(err.Error())
 	}
 
-	resultData, errs := a.LessonItemRepo.ListLessonItem(ctx, tx, pagination)
+	resultData, errs := a.LessonItemRepo.ListLessonItem(ctx, tx, pagination, lessonId)
+	if errs != nil {
+		_ = tx.Rollback()
+		return result, errs
+	}
+
+	for _, v := range resultData {
+		result = append(result, objects.ListLessonItemResponse(v))
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		_ = tx.Rollback()
+		return result, utils.ErrorInternalServer(err.Error())
+	}
+
+	return result, nil
+}
+
+func (a service) ListLessonItemByLessonIds(ctx context.Context, lessonIds []string) ([]objects.ListLessonItemResponse, *constants.ErrorResponse) {
+	var result []objects.ListLessonItemResponse
+
+	tx, err := a.Db.Begin(ctx)
+	if err != nil {
+		return result, utils.ErrorInternalServer(err.Error())
+	}
+
+	resultData, errs := a.LessonItemRepo.ListLessonItemByLessonIds(ctx, tx, lessonIds)
 	if errs != nil {
 		_ = tx.Rollback()
 		return result, errs
@@ -78,6 +105,9 @@ func (a service) CreateLessonItem(ctx context.Context, req objects.CreateLessonI
 		LessonId: req.LessonId,
 		Content:  req.Content,
 		Order:    req.Order,
+		Media:    req.Media,
+		Group:    req.Group,
+		IsDone:   req.IsDone,
 	}
 
 	errs := a.LessonItemRepo.CreateLessonItem(ctx, tx, createData)
@@ -105,6 +135,9 @@ func (a service) UpdateLessonItem(ctx context.Context, req objects.UpdateLessonI
 		LessonId: req.LessonId,
 		Content:  req.Content,
 		Order:    req.Order,
+		Media:    req.Media,
+		Group:    req.Group,
+		IsDone:   req.IsDone,
 	}
 
 	errs := a.LessonItemRepo.UpdateLessonItem(ctx, tx, updateData)

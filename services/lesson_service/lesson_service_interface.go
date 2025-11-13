@@ -15,6 +15,7 @@ type LessonServiceInterface interface {
 	CreateLesson(ctx context.Context, req objects.CreateLessonRequest) *constants.ErrorResponse
 	UpdateLesson(ctx context.Context, req objects.UpdateLessonRequest) *constants.ErrorResponse
 	DeleteLesson(ctx context.Context, req objects.DeleteLessonRequest) *constants.ErrorResponse
+	CopyLessonItem(ctx context.Context, req objects.CopyLessonRequest) *constants.ErrorResponse
 }
 
 func NewLessonService(repoCtx *repository.RepoCtx, infraCtx *infra.InfraCtx) LessonServiceInterface {

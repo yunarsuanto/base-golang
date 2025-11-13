@@ -10,7 +10,6 @@ import (
 
 type listCategoryLessonRequest struct {
 	common_input_handler.PaginationRequest
-	HasParent bool `json:"has_parent" schema:"has_parent"`
 }
 
 type listCategoryLessonResponse struct {
@@ -20,11 +19,11 @@ type listCategoryLessonResponse struct {
 }
 
 type listCategoryLessonResponseData struct {
-	Id               string `json:"id"`
-	Title            string `json:"title"`
-	Description      string `json:"description"`
-	Media            string `json:"media"`
-	CategoryLessonId string `json:"category_lesson_id"`
+	Id                 string `json:"id"`
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	CategoryLessonType string `json:"category_lesson_type"`
+	Media              string `json:"media"`
 }
 
 type detailCategoryLessonRequest struct {
@@ -37,19 +36,18 @@ type detailCategoryLessonResponse struct {
 }
 
 type detailCategoryLessonDataResponse struct {
-	Id               string                           `json:"id"`
-	Title            string                           `json:"title"`
-	Description      string                           `json:"description"`
-	Media            string                           `json:"media"`
-	CategoryLessonId string                           `json:"category_lesson_id"`
-	Childs           []listCategoryLessonResponseData `json:"childs"`
+	Id                 string `json:"id"`
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	CategoryLessonType string `json:"category_lesson_type"`
+	Media              string `json:"media"`
 }
 
 type createCategoryLessonRequest struct {
-	Title            string `json:"title" schema:"title" validate:"required"`
-	Description      string `json:"description" schema:"description" validate:"required"`
-	CategoryLessonId string `json:"category_lesson_id" schema:"category_lesson_id"`
-	Media            string `json:"media" schema:"media" validate:"required"`
+	Title              string `json:"title" schema:"title" validate:"required"`
+	Description        string `json:"description" schema:"description" validate:"required"`
+	CategoryLessonType string `json:"category_lesson_type" schema:"category_lesson_type" validate:"required"`
+	Media              string `json:"media" schema:"media" validate:"required"`
 }
 
 type createCategoryLessonResponse struct {
@@ -61,11 +59,11 @@ type createCategoryLessonResponseData struct {
 }
 
 type updateCategoryLessonRequest struct {
-	Id               string `json:"id" schema:"id" validate:"required,uuid"`
-	Title            string `json:"title" schema:"title" validate:"required"`
-	Description      string `json:"description" schema:"description" validate:"required"`
-	CategoryLessonId string `json:"category_lesson_id" schema:"category_lesson_id"`
-	Media            string `json:"media" schema:"media" validate:"required"`
+	Id                 string `json:"id" schema:"id" validate:"required,uuid"`
+	Title              string `json:"title" schema:"title" validate:"required"`
+	Description        string `json:"description" schema:"description" validate:"required"`
+	CategoryLessonType string `json:"category_lesson_type" schema:"category_lesson_type" validate:"required"`
+	Media              string `json:"media" schema:"media" validate:"required"`
 }
 
 type updateCategoryLessonResponse struct {
@@ -86,6 +84,37 @@ type deleteCategoryLessonResponse struct {
 }
 
 type deleteCategoryLessonResponseData struct {
+}
+
+type listCategoryLessonPublicResponse struct {
+	Meta common_input_handler.Meta            `json:"meta"`
+	Data listCategoryLessonPublicResponseData `json:"data"`
+}
+
+type listCategoryLessonPublicResponseData struct {
+	Id                 string                                       `json:"id"`
+	Title              string                                       `json:"title"`
+	Description        string                                       `json:"description"`
+	CategoryLessonType string                                       `json:"category_lesson_type"`
+	Media              string                                       `json:"media"`
+	Lessons            []listCategoryLessonPublicResponseDataLesson `json:"lessons"`
+}
+
+type listCategoryLessonPublicResponseDataLesson struct {
+	Id                 string                                           `json:"id"`
+	Title              string                                           `json:"title"`
+	Description        string                                           `json:"description"`
+	CategoryLessonType string                                           `json:"category_lesson_type"`
+	Media              string                                           `json:"media"`
+	Level              uint32                                           `json:"level"`
+	Items              []listCategoryLessonPublicResponseDataLessonItem `json:"items"`
+}
+
+type listCategoryLessonPublicResponseDataLessonItem struct {
+	Id      string `json:"id"`
+	Content string `json:"content"`
+	Order   uint32 `json:"order"`
+	Media   string `json:"media"`
 }
 
 func (a handler) checkPermission(ctx context.Context, permission string) *constants.ErrorResponse {

@@ -21,7 +21,10 @@ func generalRouter(handlerCtx *handler.HandlerCtx, mw middleware.MiddlewareInter
 
 	b := r.PathPrefix("/general").Subrouter()
 	b.Use(mw.GeneralAccessToken)
-	b.HandleFunc("/upload-file", handlerCtx.FileHandler.UploadBase64).Methods(http.MethodPost)
+	b.HandleFunc("/upload-file-base64", handlerCtx.FileHandler.UploadBase64).Methods(http.MethodPost)
+	b.HandleFunc("/upload-file", handlerCtx.FileHandler.UploadMultipart).Methods(http.MethodPost)
+
+	a.HandleFunc("/category-lesson/get", handlerCtx.CategoryLessonHandler.ListCategoryLessonPublic).Methods(http.MethodGet)
 
 	// a.HandleFunc("/location/province/get", handlerCtx.GeneralLocationHandler.GetListProvince).Methods(http.MethodGet)
 	// a.HandleFunc(utils.ParsePath("/notification/%s/detail", constants.IdPathVariable), handlerCtx.GeneralNotificationHandler.GetDetail).Methods(http.MethodGet)

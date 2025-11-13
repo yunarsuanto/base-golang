@@ -8,6 +8,7 @@ type CreateLessonRequest struct {
 	Title            string
 	Description      string
 	CategoryLessonId string
+	LessonType       string
 	Media            string
 	Level            uint32
 }
@@ -17,6 +18,7 @@ type UpdateLessonRequest struct {
 	Title            string
 	Description      string
 	CategoryLessonId string
+	LessonType       string
 	Media            string
 	Level            uint32
 }
@@ -26,12 +28,14 @@ type DeleteLessonRequest struct {
 }
 
 type ListLessonResponse struct {
-	Id               string
-	Title            string
-	Description      string
-	CategoryLessonId string
-	Media            string
-	Level            uint32
+	Id                  string
+	Title               string
+	Description         string
+	CategoryLessonId    string
+	LessonType          string
+	Media               string
+	CategoryLessonTitle string
+	Level               uint32
 }
 
 type DetailLessonResponse struct {
@@ -39,6 +43,13 @@ type DetailLessonResponse struct {
 	Title            string
 	Description      string
 	CategoryLessonId string
+	LessonType       string
 	Media            string
 	Level            uint32
+}
+
+type CopyLessonRequest struct {
+	LessonId  string
+	Level     uint32
+	LevelFrom uint32
 }

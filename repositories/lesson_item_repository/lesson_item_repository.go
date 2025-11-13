@@ -13,13 +13,13 @@ import (
 
 type repository struct{}
 
-func (repository) ListLessonItem(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination) ([]models.ListLessonItem, *constants.ErrorResponse) {
+func (repository) ListLessonItem(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination, lessonId string) ([]models.ListLessonItem, *constants.ErrorResponse) {
 	var result []models.ListLessonItem
 	var query models.ListLessonItem
 
 	params := []any{}
 
-	filterQuery, err := mapQueryFilterListLessonItem(pagination.Search, &params)
+	filterQuery, err := mapQueryFilterListLessonItem(pagination.Search, &params, lessonId)
 	if err != nil {
 		return result, utils.ErrDatabase(err, models.LessonItemDatacontent)
 	}
@@ -51,6 +51,36 @@ func (repository) ListLessonItem(ctx context.Context, tx *sqlx.Tx, pagination *o
 	}
 
 	pagination.GetPagination(count)
+	return result, nil
+}
+
+func (repository) ListLessonItemByLessonIds(ctx context.Context, tx *sqlx.Tx, lessonIds []string) ([]models.ListLessonItem, *constants.ErrorResponse) {
+	var result []models.ListLessonItem
+	var query models.ListLessonItem
+
+	baseQuery := fmt.Sprintf(`
+		SELECT %s
+		%s
+		WHERE u.lesson_id IN (?)
+	`, query.ColumnQuery(), query.TableQuery())
+
+	queryWithIn, args, err := sqlx.In(baseQuery, lessonIds)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.LessonItemDatacontent)
+	}
+
+	queryWithIn = tx.Rebind(queryWithIn)
+
+	err = tx.SelectContext(
+		ctx,
+		&result,
+		queryWithIn,
+		args...,
+	)
+	if err != nil {
+		return result, utils.ErrDatabase(err, models.LessonItemDatacontent)
+	}
+
 	return result, nil
 }
 
@@ -112,5 +142,17 @@ func (repository) DeleteLessonItem(ctx context.Context, tx *sqlx.Tx, data models
 		return utils.ErrDatabase(err, models.LessonItemDatacontent)
 	}
 
+	return nil
+}
+
+func (repository) BulkCreateLessonItem(ctx context.Context, tx *sqlx.Tx, data []models.BulkCreateLessonItem) *constants.ErrorResponse {
+	_, err := tx.NamedExecContext(
+		ctx,
+		data[0].InsertQuery(),
+		data,
+	)
+	if err != nil {
+		return utils.ErrDatabase(err, models.LessonItemDatacontent)
+	}
 	return nil
 }

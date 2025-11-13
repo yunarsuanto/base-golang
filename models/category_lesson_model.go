@@ -3,11 +3,11 @@ package models
 const CategoryLessonDataName = "category_lesson"
 
 type ListCategoryLesson struct {
-	Id               string  `db:"id"`
-	Title            string  `db:"title"`
-	Description      string  `db:"description"`
-	CategoryLessonId *string `db:"category_lesson_id"`
-	Media            string  `db:"media"`
+	Id                 string `db:"id"`
+	Title              string `db:"title"`
+	Description        string `db:"description"`
+	CategoryLessonType string `db:"category_lesson_type"`
+	Media              string `db:"media"`
 }
 
 func (ListCategoryLesson) ColumnQuery() string {
@@ -15,7 +15,7 @@ func (ListCategoryLesson) ColumnQuery() string {
 		u.id,
 		u.title,
 		u.description,
-		u.category_lesson_id,
+		u.category_lesson_type,
 		u.media
 	`
 }
@@ -27,11 +27,11 @@ func (ListCategoryLesson) TableQuery() string {
 }
 
 type DetailCategoryLesson struct {
-	Id               string  `db:"id"`
-	Title            string  `db:"title"`
-	Description      string  `db:"description"`
-	CategoryLessonId *string `db:"category_lesson_id"`
-	Media            string  `db:"media"`
+	Id                 string `db:"id"`
+	Title              string `db:"title"`
+	Description        string `db:"description"`
+	CategoryLessonType string `db:"category_lesson_type"`
+	Media              string `db:"media"`
 }
 
 func (DetailCategoryLesson) ColumnQuery() string {
@@ -39,7 +39,7 @@ func (DetailCategoryLesson) ColumnQuery() string {
 		u.id,
 		u.title,
 		u.description,
-		u.category_lesson_id,
+		u.category_lesson_type,
 		u.media
 	`
 }
@@ -52,15 +52,15 @@ func (DetailCategoryLesson) TableQuery() string {
 
 func (DetailCategoryLesson) FilterQuery() string {
 	return `
-		WHERE u.id = $1 OR u.category_lesson_id = $1 ORDER BY (u.id = $1) DESC;
+		WHERE u.id = $1;
 	`
 }
 
 type CreateCategoryLesson struct {
-	Title            string  `db:"title"`
-	Description      string  `db:"description"`
-	CategoryLessonId *string `db:"category_lesson_id"`
-	Media            string  `db:"media"`
+	Title              string `db:"title"`
+	Description        string `db:"description"`
+	CategoryLessonType string `db:"category_lesson_type"`
+	Media              string `db:"media"`
 }
 
 func (CreateCategoryLesson) InsertQuery() string {
@@ -69,23 +69,23 @@ func (CreateCategoryLesson) InsertQuery() string {
 		category_lessons (
 			title,
 			description,
-			category_lesson_id,
+			category_lesson_type,
 			media
 		) VALUES (
 			:title,
 			:description,
-			:category_lesson_id,
+			:category_lesson_type,
 			:media
 		)
 	`
 }
 
 type UpdateCategoryLesson struct {
-	Id               string  `db:"id"`
-	Title            string  `db:"title"`
-	Description      string  `db:"description"`
-	CategoryLessonId *string `db:"category_lesson_id"`
-	Media            string  `db:"media"`
+	Id                 string `db:"id"`
+	Title              string `db:"title"`
+	Description        string `db:"description"`
+	CategoryLessonType string `db:"category_lesson_type"`
+	Media              string `db:"media"`
 }
 
 func (UpdateCategoryLesson) InsertQuery() string {
@@ -93,7 +93,7 @@ func (UpdateCategoryLesson) InsertQuery() string {
 		UPDATE category_lessons SET
 			title = :title,
 			description = :description,
-			category_lesson_id = :category_lesson_id,
+			category_lesson_type = :category_lesson_type,
 			media = :media
 		WHERE id = :id
 	`

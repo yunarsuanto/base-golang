@@ -1,8 +1,6 @@
 package lesson_item_handler
 
 import (
-	"fmt"
-
 	"github.com/yunarsuanto/base-go/constants"
 	common_input_handler "github.com/yunarsuanto/base-go/handler"
 	"github.com/yunarsuanto/base-go/objects"
@@ -26,6 +24,9 @@ type listLessonItemResponseData struct {
 	LessonId string `json:"lesson_id"`
 	Content  string `json:"content"`
 	Order    uint32 `json:"order"`
+	Media    string `json:"media"`
+	Group    uint32 `json:"group"`
+	IsDone   bool   `json:"is_done"`
 }
 
 type detailLessonItemRequest struct {
@@ -42,12 +43,18 @@ type detailLessonItemResponseData struct {
 	LessonId string `json:"lesson_id"`
 	Content  string `json:"content"`
 	Order    uint32 `json:"order"`
+	Media    string `json:"media"`
+	Group    uint32 `json:"group"`
+	IsDone   bool   `json:"is_done"`
 }
 
 type createLessonItemRequest struct {
 	LessonId string `json:"lesson_id" schema:"lesson_id" validate:"required"`
 	Content  string `json:"content" schema:"content" validate:"required"`
 	Order    uint32 `json:"order" schema:"order" validate:"required"`
+	Media    string `json:"media" schema:"media" validate:"required"`
+	Group    uint32 `json:"group" schema:"group" validate:"required"`
+	IsDone   bool   `json:"is_done" schema:"is_done"`
 }
 
 type createLessonItemResponse struct {
@@ -63,6 +70,9 @@ type updateLessonItemRequest struct {
 	LessonId string `json:"lesson_id" schema:"lesson_id" validate:"required"`
 	Content  string `json:"content" schema:"content" validate:"required"`
 	Order    uint32 `json:"order" schema:"order" validate:"required"`
+	Media    string `json:"media" schema:"media" validate:"required"`
+	Group    uint32 `json:"group" schema:"group" validate:"required"`
+	IsDone   bool   `json:"is_done" schema:"is_done"`
 }
 
 type updateLessonItemResponse struct {
@@ -92,7 +102,6 @@ func (a handler) checkPermission(ctx context.Context, permission string) *consta
 	}
 
 	if !claims.IsSuperAdmin {
-		fmt.Println("wadaw")
 		if !utils.InArrayExist(permission, claims.Permissions) {
 			return constants.ErrIneligibleAccess
 		}

@@ -20,12 +20,14 @@ type listLessonResponse struct {
 }
 
 type listLessonResponseData struct {
-	Id               string `json:"id"`
-	Title            string `json:"title"`
-	Description      string `json:"description"`
-	CategoryLessonId string `json:"category_lesson_id"`
-	Media            string `json:"media"`
-	Level            uint32 `json:"level"`
+	Id                  string `json:"id"`
+	Title               string `json:"title"`
+	Description         string `json:"description"`
+	CategoryLessonId    string `json:"category_lesson_id"`
+	LessonType          string `json:"lesson_type"`
+	Media               string `json:"media"`
+	CategoryLessonTitle string `json:"category_lesson_title"`
+	Level               uint32 `json:"level"`
 }
 
 type detailLessonRequest struct {
@@ -42,6 +44,7 @@ type detailLessonResponseData struct {
 	Title            string `json:"title"`
 	Description      string `json:"description"`
 	CategoryLessonId string `json:"category_lesson_id"`
+	LessonType       string `json:"lesson_type"`
 	Media            string `json:"media"`
 	Level            uint32 `json:"level"`
 }
@@ -50,6 +53,7 @@ type createLessonRequest struct {
 	Title            string `json:"title" schema:"title" validate:"required"`
 	Description      string `json:"description" schema:"description" validate:"required"`
 	CategoryLessonId string `json:"category_lesson_id" schema:"category_lesson_id" validate:"required"`
+	LessonType       string `json:"lesson_type" schema:"lesson_type" validate:"required"`
 	Media            string `json:"media" schema:"media" validate:"required"`
 	Level            uint32 `json:"level" schema:"level" validate:"required"`
 }
@@ -67,6 +71,7 @@ type updateLessonRequest struct {
 	Title            string `json:"title" schema:"title" validate:"required"`
 	Description      string `json:"description" schema:"description" validate:"required"`
 	CategoryLessonId string `json:"category_lesson_id" schema:"category_lesson_id" validate:"required"`
+	LessonType       string `json:"lesson_type" schema:"lesson_type" validate:"required"`
 	Media            string `json:"media" schema:"media" validate:"required"`
 	Level            uint32 `json:"level" schema:"level" validate:"required"`
 }
@@ -89,6 +94,20 @@ type deleteLessonResponse struct {
 }
 
 type deleteLessonResponseData struct {
+}
+
+type copyLessonRequest struct {
+	LessonId  string `json:"lesson_id" schema:"lesson_id" validate:"required,uuid"`
+	Level     uint32 `json:"level" schema:"level" validate:"required"`
+	LevelFrom uint32 `json:"level_from" schema:"level_from" validate:"required"`
+}
+
+type copyLessonResponse struct {
+	Meta common_input_handler.Meta `json:"meta"`
+	Data *copyLessonResponseData   `json:"data"`
+}
+
+type copyLessonResponseData struct {
 }
 
 func (a handler) checkPermission(ctx context.Context, permission string) *constants.ErrorResponse {

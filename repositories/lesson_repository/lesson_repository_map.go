@@ -11,12 +11,13 @@ func mapQueryFilterListLesson(search string, params *[]any, categoryLessonId str
 
 	if search != "" {
 		searchParams := fmt.Sprintf("%%%s%%", search)
-		filterArray = append(filterArray, "u.title LIKE $2")
+		filterArray = append(filterArray, fmt.Sprintf("u.title ILIKE $%d", len(*params)+1))
 		(*params) = append((*params), searchParams)
 	}
 
 	if categoryLessonId != "" {
-		filterArray = append(filterArray, "u.category_lesson_id = $1")
+		filterArray = append(filterArray, fmt.Sprintf(`u.category_lesson_id = $%d`, len(*params)+1))
+		(*params) = append((*params), categoryLessonId)
 	}
 
 	result = strings.Join(filterArray, " AND ")

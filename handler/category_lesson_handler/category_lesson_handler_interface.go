@@ -7,6 +7,8 @@ import (
 )
 
 type CategoryLessonHandlerInterface interface {
+	ListCategoryLessonPublic(w http.ResponseWriter, r *http.Request)
+
 	ListCategoryLesson(w http.ResponseWriter, r *http.Request)
 	DetailCategoryLesson(w http.ResponseWriter, r *http.Request)
 	CreateCategoryLesson(w http.ResponseWriter, r *http.Request)

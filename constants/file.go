@@ -83,6 +83,34 @@ func ValidFileMimeType() []string {
 		"application/x-csv",
 		"text/x-csv",
 		"application/vnd.ms-excel",
+		// webm
+		"video/webm",
+		"audio/webm",
+		// mp4
+		"video/mp4",
+		// mov
+		"video/quicktime",
+		// avi
+		"video/x-msvideo",
+		// mkv
+		"video/x-matroska",
+		// ogg
+		"video/ogg",
+		"audio/ogg",
+		// mp3
+		"audio/mpeg",
+		// wav
+		"audio/wav",
+		"audio/x-wav",
+		// images
+		"image/jpeg",
+		"image/jpg",
+		"image/png",
+		"image/gif",
+		"image/webp",
+		"image/bmp",
+		"image/tiff",
+		"image/svg+xml",
 	}
 
 	mimeTypes = append(mimeTypes, ImageMimeType()...)

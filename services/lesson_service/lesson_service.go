@@ -2,6 +2,7 @@ package lesson_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/yunarsuanto/base-go/constants"
 	"github.com/yunarsuanto/base-go/infra/initiator/infra"
@@ -77,11 +78,12 @@ func (a service) CreateLesson(ctx context.Context, req objects.CreateLessonReque
 		Title:            req.Title,
 		Description:      req.Description,
 		CategoryLessonId: req.CategoryLessonId,
+		LessonType:       req.LessonType,
 		Media:            req.Media,
 		Level:            req.Level,
 	}
 
-	errs := a.LessonRepo.CreateLesson(ctx, tx, createData)
+	_, errs := a.LessonRepo.CreateLesson(ctx, tx, createData)
 	if errs != nil {
 		_ = tx.Rollback()
 		return errs
@@ -106,6 +108,7 @@ func (a service) UpdateLesson(ctx context.Context, req objects.UpdateLessonReque
 		Title:            req.Title,
 		Description:      req.Description,
 		CategoryLessonId: req.CategoryLessonId,
+		LessonType:       req.LessonType,
 		Media:            req.Media,
 		Level:            req.Level,
 	}
@@ -135,6 +138,76 @@ func (a service) DeleteLesson(ctx context.Context, req objects.DeleteLessonReque
 	}
 
 	errs := a.LessonRepo.DeleteLesson(ctx, tx, deleteData)
+	if errs != nil {
+		_ = tx.Rollback()
+		return errs
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		_ = tx.Rollback()
+		return utils.ErrorInternalServer(err.Error())
+	}
+
+	return nil
+}
+
+func (a service) CopyLessonItem(ctx context.Context, req objects.CopyLessonRequest) *constants.ErrorResponse {
+	tx, err := a.Db.Begin(ctx)
+	if err != nil {
+		return utils.ErrorInternalServer(err.Error())
+	}
+
+	var lessonId string
+	var dataItem []models.ListLessonItem
+
+	detail, errs := a.LessonRepo.DetailLesson(ctx, tx, req.LessonId)
+	if errs != nil {
+		_ = tx.Rollback()
+		return errs
+	}
+
+	lessonId, errs = a.LessonRepo.CreateLesson(ctx, tx, models.CreateLesson{
+		Title:            detail.Title + fmt.Sprintf(" Level %d", req.Level),
+		Description:      detail.Description,
+		CategoryLessonId: detail.CategoryLessonId,
+		LessonType:       detail.LessonType,
+		Media:            detail.Media,
+		Level:            req.Level,
+	})
+	if errs != nil {
+		_ = tx.Rollback()
+		return errs
+	}
+
+	dataItem, errs = a.LessonItemRepo.ListLessonItem(ctx, tx, &objects.Pagination{
+		Page:  1,
+		Limit: 1000,
+	}, req.LessonId)
+	if errs != nil {
+		_ = tx.Rollback()
+		return errs
+	}
+
+	if len(dataItem) == 0 {
+		_ = tx.Rollback()
+		return errs
+	}
+
+	dataInsert := []models.BulkCreateLessonItem{}
+
+	for _, v := range dataItem {
+		dataInsert = append(dataInsert, models.BulkCreateLessonItem{
+			LessonId: lessonId,
+			Content:  v.Content,
+			Order:    v.Order,
+			Media:    v.Media,
+			Group:    v.Group,
+			IsDone:   v.IsDone,
+		})
+	}
+
+	errs = a.LessonItemRepo.BulkCreateLessonItem(ctx, tx, dataInsert)
 	if errs != nil {
 		_ = tx.Rollback()
 		return errs

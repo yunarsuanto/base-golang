@@ -12,7 +12,7 @@ import (
 type LessonRepositoryInterface interface {
 	ListLesson(ctx context.Context, tx *sqlx.Tx, pagination *objects.Pagination, categoryLessonId string) ([]models.ListLesson, *constants.ErrorResponse)
 	DetailLesson(ctx context.Context, tx *sqlx.Tx, id string) (models.DetailLesson, *constants.ErrorResponse)
-	CreateLesson(ctx context.Context, tx *sqlx.Tx, data models.CreateLesson) *constants.ErrorResponse
+	CreateLesson(ctx context.Context, tx *sqlx.Tx, data models.CreateLesson) (string, *constants.ErrorResponse)
 	UpdateLesson(ctx context.Context, tx *sqlx.Tx, data models.UpdateLesson) *constants.ErrorResponse
 	DeleteLesson(ctx context.Context, tx *sqlx.Tx, data models.DeleteLesson) *constants.ErrorResponse
 }

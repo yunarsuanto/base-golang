@@ -8,6 +8,9 @@ type CreateLessonItemRequest struct {
 	LessonId string
 	Content  string
 	Order    uint32
+	Media    string
+	Group    uint32
+	IsDone   bool
 }
 
 type UpdateLessonItemRequest struct {
@@ -15,6 +18,9 @@ type UpdateLessonItemRequest struct {
 	LessonId string
 	Content  string
 	Order    uint32
+	Media    string
+	Group    uint32
+	IsDone   bool
 }
 
 type DeleteLessonItemRequest struct {
@@ -26,6 +32,9 @@ type ListLessonItemResponse struct {
 	LessonId string
 	Content  string
 	Order    uint32
+	Media    string
+	Group    uint32
+	IsDone   bool
 }
 
 type DetailLessonItemResponse struct {
@@ -33,4 +42,7 @@ type DetailLessonItemResponse struct {
 	LessonId string
 	Content  string
 	Order    uint32
+	Media    string
+	Group    uint32
+	IsDone   bool
 }

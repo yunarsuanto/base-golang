@@ -45,3 +45,8 @@ coverage.out
 
 # Migrations & templates (optional clean)
 templates/.DS_Store
+
+
+# Temp and File
+local/
+temp/

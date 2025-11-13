@@ -10,7 +10,9 @@ import (
 )
 
 type LessonItemServiceInterface interface {
-	ListLessonItem(ctx context.Context, pagination *objects.Pagination) ([]objects.ListLessonItemResponse, *constants.ErrorResponse)
+	ListLessonItem(ctx context.Context, pagination *objects.Pagination, lessonId string) ([]objects.ListLessonItemResponse, *constants.ErrorResponse)
+	ListLessonItemByLessonIds(ctx context.Context, lessonId []string) ([]objects.ListLessonItemResponse, *constants.ErrorResponse)
+
 	DetailLessonItem(ctx context.Context, req objects.DetailLessonItemRequest) (objects.DetailLessonItemResponse, *constants.ErrorResponse)
 	CreateLessonItem(ctx context.Context, req objects.CreateLessonItemRequest) *constants.ErrorResponse
 	UpdateLessonItem(ctx context.Context, req objects.UpdateLessonItemRequest) *constants.ErrorResponse

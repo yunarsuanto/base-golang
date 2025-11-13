@@ -10,11 +10,13 @@ import (
 )
 
 type CategoryLessonServiceInterface interface {
-	ListCategoryLesson(ctx context.Context, pagination *objects.Pagination, hasParent bool) ([]objects.ListCategoryLessonResponse, *constants.ErrorResponse)
-	DetailCategoryLesson(ctx context.Context, req objects.DetailCategoryLessonRequest) ([]objects.DetailCategoryLessonResponse, *constants.ErrorResponse)
+	ListCategoryLesson(ctx context.Context, pagination *objects.Pagination) ([]objects.ListCategoryLessonResponse, *constants.ErrorResponse)
+	DetailCategoryLesson(ctx context.Context, req objects.DetailCategoryLessonRequest) (objects.DetailCategoryLessonResponse, *constants.ErrorResponse)
 	CreateCategoryLesson(ctx context.Context, req objects.CreateCategoryLessonRequest) *constants.ErrorResponse
 	UpdateCategoryLesson(ctx context.Context, req objects.UpdateCategoryLessonRequest) *constants.ErrorResponse
 	DeleteCategoryLesson(ctx context.Context, req objects.DeleteCategoryLessonRequest) *constants.ErrorResponse
+
+	CategoryLessonPublic(ctx context.Context) (objects.ListCategoryLessonPublicResponse, *constants.ErrorResponse)
 }
 
 func NewCategoryLessonService(repoCtx *repository.RepoCtx, infraCtx *infra.InfraCtx) CategoryLessonServiceInterface {

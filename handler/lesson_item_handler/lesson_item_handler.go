@@ -1,7 +1,6 @@
 package lesson_item_handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -22,7 +21,6 @@ func (a handler) ListLessonItem(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	errs := a.checkPermission(ctx, permission)
 	if errs != nil {
-		fmt.Println("wadaw")
 		result = listLessonItemResponse{Meta: utils.SetErrorMeta(errs, permission)}
 		utils.JSONResponse(w, errs.HttpCode, &result)
 		return
@@ -46,7 +44,7 @@ func (a handler) ListLessonItem(w http.ResponseWriter, r *http.Request) {
 
 	pagination := objects.NewPagination()
 	pagination.MapFromRequest(in.PaginationRequest)
-	data, errs := a.LessonItemService.ListLessonItem(ctx, pagination)
+	data, errs := a.LessonItemService.ListLessonItem(ctx, pagination, in.LessonId)
 	if errs != nil {
 		result = listLessonItemResponse{Meta: utils.SetErrorMeta(errs, permission)}
 		utils.JSONResponse(w, errs.HttpCode, &result)
@@ -60,6 +58,9 @@ func (a handler) ListLessonItem(w http.ResponseWriter, r *http.Request) {
 			LessonId: v.LessonId,
 			Content:  v.Content,
 			Order:    v.Order,
+			Media:    v.Media,
+			Group:    v.Group,
+			IsDone:   v.IsDone,
 		}
 	}
 
@@ -114,6 +115,9 @@ func (a handler) DetailLessonItem(w http.ResponseWriter, r *http.Request) {
 		Id:      data.Id,
 		Content: data.Content,
 		Order:   data.Order,
+		Media:   data.Media,
+		Group:   data.Group,
+		IsDone:  data.IsDone,
 	}
 
 	result = detailLessonItemResponse{

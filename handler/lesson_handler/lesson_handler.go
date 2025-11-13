@@ -54,12 +54,14 @@ func (a handler) ListLesson(w http.ResponseWriter, r *http.Request) {
 	resultData := make([]*listLessonResponseData, len(data))
 	for i, v := range data {
 		resultData[i] = &listLessonResponseData{
-			Id:               v.Id,
-			CategoryLessonId: v.CategoryLessonId,
-			Title:            v.Title,
-			Description:      v.Description,
-			Media:            v.Media,
-			Level:            v.Level,
+			Id:                  v.Id,
+			CategoryLessonId:    v.CategoryLessonId,
+			Title:               v.Title,
+			Description:         v.Description,
+			Media:               v.Media,
+			CategoryLessonTitle: v.CategoryLessonTitle,
+			LessonType:          v.LessonType,
+			Level:               v.Level,
 		}
 	}
 
@@ -115,6 +117,7 @@ func (a handler) DetailLesson(w http.ResponseWriter, r *http.Request) {
 		Title:            data.Title,
 		Description:      data.Description,
 		CategoryLessonId: data.CategoryLessonId,
+		LessonType:       data.LessonType,
 		Media:            data.Media,
 		Level:            data.Level,
 	}
@@ -243,6 +246,47 @@ func (a handler) DeleteLesson(w http.ResponseWriter, r *http.Request) {
 
 	result = deleteLessonResponse{
 		Meta: utils.SetSuccessMeta("Delete Lesson", permission),
+	}
+	utils.JSONResponse(w, result.Meta.Status, &result)
+}
+
+func (a handler) CopyLessonItem(w http.ResponseWriter, r *http.Request) {
+	var result copyLessonResponse
+	permission := constants.PermissionLessonUpdate
+
+	ctx := r.Context()
+	errs := a.checkPermission(ctx, permission)
+	if errs != nil {
+		result = copyLessonResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+	var in copyLessonRequest
+	defer func() {
+		a.ActivityLogService.Create(ctx, objects.CreateActivityLog{
+			Request:      r,
+			Body:         utils.MaskBody(&in),
+			ResponseMeta: result.Meta,
+		})
+	}()
+
+	errs = utils.DecodeJson(&in, r.Body)
+	if errs != nil {
+		result = copyLessonResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	req := objects.CopyLessonRequest(in)
+	errs = a.LessonService.CopyLessonItem(ctx, req)
+	if errs != nil {
+		result = copyLessonResponse{Meta: utils.SetErrorMeta(errs, permission)}
+		utils.JSONResponse(w, errs.HttpCode, &result)
+		return
+	}
+
+	result = copyLessonResponse{
+		Meta: utils.SetSuccessMeta("Copy Lesson", permission),
 	}
 	utils.JSONResponse(w, result.Meta.Status, &result)
 }
